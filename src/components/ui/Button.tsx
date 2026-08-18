@@ -16,13 +16,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        'bg-[#578E7E] text-[#FFFAEC] hover:bg-[#3a6b5e] focus:ring-[#578E7E] shadow-sm hover:shadow-md active:scale-[0.98]',
+        'bg-[#1557B0] text-white hover:bg-[#0B2A4A] focus:ring-[#1557B0] shadow-sm hover:shadow-md active:scale-[0.98]',
       secondary:
-        'bg-[#3D3D3D] text-[#FFFAEC] hover:bg-[#2a2a2a] focus:ring-[#3D3D3D] shadow-sm hover:shadow-md active:scale-[0.98]',
+        'bg-[#0B2A4A] text-white hover:bg-[#1557B0] focus:ring-[#0B2A4A] shadow-sm hover:shadow-md active:scale-[0.98]',
       outline:
-        'border-2 border-[#578E7E] text-[#578E7E] hover:bg-[#578E7E] hover:text-[#FFFAEC] focus:ring-[#578E7E] bg-transparent',
+        'border-2 border-[#1557B0] text-[#1557B0] hover:bg-[#1557B0] hover:text-white focus:ring-[#1557B0] bg-transparent',
       ghost:
-        'text-[#578E7E] hover:bg-[#F5ECD5] focus:ring-[#578E7E] bg-transparent',
+        'text-[#1557B0] hover:bg-[#F4F8FC] focus:ring-[#1557B0] bg-transparent',
       danger:
         'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm active:scale-[0.98]',
     };

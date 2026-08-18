@@ -47,6 +47,7 @@ export interface ContactFormData {
   phone: string;
   message: string;
   honeypot?: string;
+  formStartedAt?: string;
 }
 
 export interface Client {

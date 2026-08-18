@@ -24,47 +24,51 @@ const CTABanner: React.FC = () => {
   }, []);
 
   return (
-    <section ref={ref} className="py-16 bg-[#3D3D3D] text-white overflow-hidden relative">
-      {/* Decorative patterns */}
-      <div className="absolute inset-0 pointer-events-none opacity-5">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <pattern id="cta-grid" width="30" height="30" patternUnits="userSpaceOnUse">
-            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="white" strokeWidth="1" />
-          </pattern>
-          <rect width="100%" height="100%" fill="url(#cta-grid)" />
-        </svg>
-      </div>
-
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <section ref={ref} className="py-12 sm:py-16 md:py-20 bg-[#F4F8FC] overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
-          className={`transition-all duration-700 ${
-            inView ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+          className={`relative rounded-2xl bg-gradient-to-br from-[#1557B0] via-[#103E70] to-[#0B2A4A] p-8 sm:p-12 md:p-14 text-white shadow-xl overflow-hidden transition-all duration-700 ${
+            inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          <span className="text-xs font-semibold text-[#578E7E] uppercase tracking-[0.2em] mb-3 inline-block">
-            Start Sourcing
-          </span>
-          <h2
-            className="text-3xl sm:text-4xl font-bold mb-4 font-serif"
-            style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
-          >
-            Ready to source your next order?
-          </h2>
-          <p className="text-white/60 text-sm sm:text-base max-w-xl mx-auto mb-8 leading-relaxed">
-            Get fast quotations, verified compliance, and end-to-end delivery tracking on all your aerospace and aviation consumables.
-          </p>
+          {/* Subtle geometric background glow */}
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-64 h-64 rounded-full bg-[#1557B0]/30 blur-2xl pointer-events-none" />
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/products">
-              <Button variant="primary" size="lg" className="w-full sm:w-auto flex items-center justify-center gap-2">
-                Browse Products <ArrowRight size={16} />
-              </Button>
-            </Link>
-            <Link to="/contact">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-[#3D3D3D] flex items-center justify-center gap-2">
-                Request a Quote <MessageSquare size={16} />
-              </Button>
-            </Link>
+          <div className="relative z-10 max-w-3xl mx-auto text-center">
+            <span className="inline-block text-xs font-bold text-[#93C5FD] uppercase tracking-[0.2em] mb-3 px-3 py-1 bg-white/10 rounded-full border border-white/15 backdrop-blur-xs">
+              Fast Aerospace Sourcing
+            </span>
+            <h2
+              className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-serif text-white tracking-tight"
+              style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+            >
+              Ready to Source Your Next Consumables Order?
+            </h2>
+            <p className="text-slate-200 text-sm sm:text-base max-w-xl mx-auto mb-8 leading-relaxed font-normal">
+              Connect with our procurement specialists for bulk pricing, guaranteed OEM documentation, and expedited delivery timelines.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link to="/products" className="w-full sm:w-auto">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-[#1557B0] hover:bg-slate-100 hover:text-[#0B2A4A] font-bold shadow-md"
+                >
+                  Browse Products <ArrowRight size={16} />
+                </Button>
+              </Link>
+              <Link to="/contact" className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto border-2 border-white/80 text-white hover:bg-white/10 flex items-center justify-center gap-2 font-semibold bg-transparent"
+                >
+                  Request a Quote <MessageSquare size={16} />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

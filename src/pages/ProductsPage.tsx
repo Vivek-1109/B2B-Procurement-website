@@ -10,6 +10,7 @@ import { useAdmin } from '../context/AdminContext';
 import type { Product } from '../types';
 import { cn } from '../utils/cn';
 import { useDebounce } from '../hooks/useDebounce';
+import { useSEO } from '../hooks/useSEO';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -17,7 +18,7 @@ const ITEMS_PER_PAGE = 12;
    PRODUCT CARD  — compact grid card linking to detail page
    ════════════════════════════════════════════════════════ */
 const ProductCard: React.FC<{ product: Product; delay: number }> = ({ product, delay }) => {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLAnchorElement>(null);
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
@@ -41,14 +42,14 @@ const ProductCard: React.FC<{ product: Product; delay: number }> = ({ product, d
       ref={ref}
       to={`/products/${product.id}`}
       className={cn(
-        'group bg-white rounded-xl border border-[#F5ECD5] overflow-hidden flex flex-col',
-        'hover:shadow-xl hover:border-[#578E7E]/35 hover:-translate-y-1 transition-all duration-300',
+        'group bg-white rounded-xl border border-[#E5E7EB] overflow-hidden flex flex-col',
+        'hover:shadow-xl hover:border-[#1557B0]/35 hover:-translate-y-1 transition-all duration-300',
         inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
       )}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {/* Image */}
-      <div className="relative h-44 overflow-hidden bg-[#F5ECD5]">
+      <div className="relative h-44 overflow-hidden bg-[#F4F8FC]">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
@@ -58,18 +59,18 @@ const ProductCard: React.FC<{ product: Product; delay: number }> = ({ product, d
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Tag size={36} className="text-[#578E7E]/20" />
+            <Tag size={36} className="text-[#1557B0]/20" />
           </div>
         )}
         {/* Category */}
         <div className="absolute top-2.5 left-2.5">
-          <span className="text-[10px] px-2.5 py-0.5 bg-[#578E7E] text-white rounded-full font-semibold">
+          <span className="text-[10px] px-2.5 py-0.5 bg-[#1557B0] text-white rounded-full font-semibold">
             {product.category}
           </span>
         </div>
         {/* View overlay on hover */}
-        <div className="absolute inset-0 bg-[#578E7E]/0 group-hover:bg-[#578E7E]/10 transition-colors duration-300 flex items-center justify-center">
-          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white text-[#578E7E] text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5">
+        <div className="absolute inset-0 bg-[#1557B0]/0 group-hover:bg-[#1557B0]/10 transition-colors duration-300 flex items-center justify-center">
+          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white text-[#1557B0] text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5">
             <ZoomIn size={12} /> View Product
           </span>
         </div>
@@ -77,19 +78,19 @@ const ProductCard: React.FC<{ product: Product; delay: number }> = ({ product, d
 
       {/* Content */}
       <div className="flex flex-col flex-1 p-4">
-        <h3 className="font-bold text-[#3D3D3D] text-sm leading-snug mb-1.5 line-clamp-2 group-hover:text-[#578E7E] transition-colors">
+        <h3 className="font-bold text-[#1F2937] text-sm leading-snug mb-1.5 line-clamp-2 group-hover:text-[#1557B0] transition-colors">
           {product.name}
         </h3>
-        <p className="text-xs text-[#8a8a8a] leading-relaxed line-clamp-3 flex-1">
+        <p className="text-xs text-[#6B7280] leading-relaxed line-clamp-3 flex-1">
           {product.description}
         </p>
 
         {/* Footer */}
-        <div className="mt-3 pt-3 border-t border-[#F5ECD5] flex items-center justify-between">
-          <span className="text-xs text-[#578E7E] font-semibold flex items-center gap-1">
+        <div className="mt-3 pt-3 border-t border-[#E5E7EB] flex items-center justify-between">
+          <span className="text-xs text-[#1557B0] font-semibold flex items-center gap-1">
             Specifications <ArrowRight size={11} className="group-hover:translate-x-1 transition-transform" />
           </span>
-          <span className="text-[10px] text-white bg-[#578E7E] px-2.5 py-1 rounded-full font-semibold">
+          <span className="text-[10px] text-white bg-[#1557B0] px-2.5 py-1 rounded-full font-semibold">
             Get Quote
           </span>
         </div>
@@ -122,6 +123,56 @@ const ProductsPage: React.FC = () => {
     setActiveCategory(categoryParam);
     setPage(1);
   }, [categoryParam]);
+
+  const categoryDesc = useMemo(() => {
+    if (activeCategory === 'All') return '';
+    const catObj = categories_list.find(c => c.name === activeCategory);
+    return catObj?.description || '';
+  }, [categories_list, activeCategory]);
+
+  const seoTitle = activeCategory === 'All'
+    ? 'B2B Procurement Catalogue | APR Services Enterprise'
+    : `Buy Bulk ${activeCategory} | B2B Procurement | APR Services Enterprise`;
+
+  const seoDesc = activeCategory === 'All'
+    ? 'Browse our full industrial inventory of aviation consumables. Find certified adhesives, coatings, lubricants, tapes, greases, and sealants.'
+    : `Premium supply of ${activeCategory}. ${categoryDesc ? `${categoryDesc.slice(0, 140)}... ` : ''}Request a fast wholesale quote today.`;
+
+  const canonicalUrl = activeCategory === 'All'
+    ? 'https://aprsvs.com/products'
+    : `https://aprsvs.com/products?category=${encodeURIComponent(activeCategory)}`;
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      {
+        '@type': 'ListItem',
+        'position': 1,
+        'name': 'Home',
+        'item': 'https://aprsvs.com/'
+      },
+      {
+        '@type': 'ListItem',
+        'position': 2,
+        'name': 'Products',
+        'item': 'https://aprsvs.com/products'
+      },
+      ...(activeCategory !== 'All' ? [{
+        '@type': 'ListItem',
+        'position': 3,
+        'name': activeCategory,
+        'item': canonicalUrl
+      }] : [])
+    ]
+  };
+
+  useSEO({
+    title: seoTitle,
+    description: seoDesc,
+    canonicalUrl,
+    schemaMarkup: breadcrumbSchema
+  });
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -166,54 +217,54 @@ const ProductsPage: React.FC = () => {
       <Navbar />
 
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-[#3D3D3D] via-[#4a6b60] to-[#578E7E] pt-24 pb-12">
+      <div className="bg-gradient-to-br from-[#0B2A4A] via-[#103E70] to-[#1557B0] pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-white/60 hover:text-white text-sm mb-5 transition-colors">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-white/70 hover:text-white text-sm mb-5 transition-colors">
             <ArrowLeft size={14} /> Back to Home
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <p className="text-[#a8d5c8] text-xs font-semibold uppercase tracking-[0.15em] mb-2">APR Services Enterprise</p>
+              <p className="text-[#93C5FD] text-xs font-semibold uppercase tracking-[0.15em] mb-2">APR Services Enterprise</p>
               <h1 className="text-3xl sm:text-4xl font-bold text-white font-serif mb-2">
                 Product Catalogue
               </h1>
-              <p className="text-white/60 text-sm max-w-lg">
+              <p className="text-slate-200 text-sm max-w-lg">
                 Browse our complete aviation and industrial consumables range. Select any product to view full technical specifications and request quotes.
               </p>
             </div>
             {!loadingProducts && (
-              <div className="flex-shrink-0 bg-white/10 border border-white/20 rounded-xl px-5 py-3 text-center backdrop-blur-sm">
+              <div className="flex-shrink-0 bg-white/10 border border-white/20 rounded-xl px-5 py-3 text-center backdrop-blur-xs">
                 <p className="text-2xl font-bold text-white">{products.length}</p>
-                <p className="text-white/60 text-xs">Total Products</p>
+                <p className="text-white/70 text-xs">Total Products</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div ref={topRef} className="bg-[#FFFAEC] min-h-screen">
+      <div ref={topRef} className="bg-[#F4F8FC] min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
           {/* Toolbar */}
           <div className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="relative flex-1">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8a8a]" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
               <input
                 type="text"
                 placeholder="Search products by name, category or description…"
                 value={search}
                 onChange={e => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 text-sm border border-[#e0d8c8] rounded-lg bg-white focus:border-[#578E7E] focus:ring-2 focus:ring-[#578E7E]/15 outline-none"
+                className="w-full pl-10 pr-10 py-2.5 text-sm border border-[#E5E7EB] rounded-lg bg-white text-[#1F2937] placeholder-[#9CA3AF] focus:border-[#1557B0] focus:ring-2 focus:ring-[#1557B0]/15 outline-none"
               />
               {search && (
-                <button onClick={() => handleSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8a8a8a] hover:text-[#3D3D3D]">
+                <button onClick={() => handleSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2937]">
                   <X size={14} />
                 </button>
               )}
             </div>
             <button
               onClick={() => setShowFilters(v => !v)}
-              className="sm:hidden flex items-center gap-2 px-4 py-2.5 text-sm border border-[#e0d8c8] rounded-lg bg-white text-[#5a5a5a]"
+              className="sm:hidden flex items-center gap-2 px-4 py-2.5 text-sm border border-[#E5E7EB] rounded-lg bg-white text-[#4B5563]"
             >
               <Filter size={14} /> Filters
             </button>
@@ -228,8 +279,8 @@ const ProductsPage: React.FC = () => {
                 className={cn(
                   'px-4 py-1.5 text-sm font-medium rounded-full border transition-all duration-200',
                   activeCategory === cat
-                    ? 'bg-[#578E7E] text-white border-[#578E7E] shadow-sm'
-                    : 'bg-white text-[#5a5a5a] border-[#e0d8c8] hover:border-[#578E7E] hover:text-[#578E7E]'
+                    ? 'bg-[#1557B0] text-white border-[#1557B0] shadow-xs'
+                    : 'bg-white text-[#4B5563] border-[#E5E7EB] hover:border-[#1557B0] hover:text-[#1557B0]'
                 )}
               >
                 {cat}
@@ -239,34 +290,34 @@ const ProductsPage: React.FC = () => {
 
           {/* Result count */}
           <div className="flex items-center justify-between mb-5">
-            <p className="text-sm text-[#8a8a8a]">
+            <p className="text-sm text-[#6B7280]">
               {loadingProducts ? 'Loading products…' : (
                 <>
-                  Showing <strong className="text-[#3D3D3D]">{paginated.length}</strong> of{' '}
-                  <strong className="text-[#3D3D3D]">{filtered.length}</strong> products
+                  Showing <strong className="text-[#1F2937]">{paginated.length}</strong> of{' '}
+                  <strong className="text-[#1F2937]">{filtered.length}</strong> products
                   {activeCategory !== 'All' && <> in <em>"{activeCategory}"</em></>}
                 </>
               )}
             </p>
-            <p className="text-xs text-[#8a8a8a] hidden sm:block">Select any card to view details</p>
+            <p className="text-xs text-[#6B7280] hidden sm:block">Select any card to view details</p>
           </div>
 
           {/* Loading */}
           {loadingProducts && products.length === 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-[#F5ECD5] rounded-xl h-72 animate-pulse" />
+                <div key={i} className="bg-white border border-[#E5E7EB] rounded-xl h-72 animate-pulse" />
               ))}
             </div>
           ) : paginated.length === 0 ? (
             <div className="text-center py-20">
-              <Tag size={40} className="mx-auto mb-4 text-[#578E7E]/25" />
-              <p className="text-[#8a8a8a] font-medium mb-1">No products found</p>
-              <p className="text-xs text-[#8a8a8a]">Try adjusting your search or category filter</p>
+              <Tag size={40} className="mx-auto mb-4 text-[#1557B0]/25" />
+              <p className="text-[#6B7280] font-medium mb-1">No products found</p>
+              <p className="text-xs text-[#6B7280]">Try adjusting your search or category filter</p>
               {(search || activeCategory !== 'All') && (
                 <button
                   onClick={() => { handleSearch(''); handleCategoryChange('All'); }}
-                  className="mt-4 text-sm text-[#578E7E] hover:underline"
+                  className="mt-4 text-sm text-[#1557B0] hover:underline font-medium"
                 >
                   Clear all filters
                 </button>
@@ -290,7 +341,7 @@ const ProductsPage: React.FC = () => {
               <button
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
-                className="p-2 rounded-lg border border-[#e0d8c8] bg-white text-[#5a5a5a] hover:border-[#578E7E] hover:text-[#578E7E] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-lg border border-[#E5E7EB] bg-white text-[#4B5563] hover:border-[#1557B0] hover:text-[#1557B0] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -299,7 +350,7 @@ const ProductsPage: React.FC = () => {
                 const show = p === 1 || p === totalPages || Math.abs(p - page) <= 1;
                 const ellipsisBefore = p === page - 2 && page > 3;
                 const ellipsisAfter = p === page + 2 && page < totalPages - 2;
-                if (ellipsisBefore || ellipsisAfter) return <span key={p} className="px-1 text-[#8a8a8a] text-sm">…</span>;
+                if (ellipsisBefore || ellipsisAfter) return <span key={p} className="px-1 text-[#6B7280] text-sm">…</span>;
                 if (!show) return null;
                 return (
                   <button
@@ -308,8 +359,8 @@ const ProductsPage: React.FC = () => {
                     className={cn(
                       'w-9 h-9 text-sm font-medium rounded-lg border transition-all',
                       p === page
-                        ? 'bg-[#578E7E] text-white border-[#578E7E]'
-                        : 'bg-white text-[#5a5a5a] border-[#e0d8c8] hover:border-[#578E7E] hover:text-[#578E7E]'
+                        ? 'bg-[#1557B0] text-white border-[#1557B0]'
+                        : 'bg-white text-[#4B5563] border-[#E5E7EB] hover:border-[#1557B0] hover:text-[#1557B0]'
                     )}
                   >
                     {p}
@@ -320,7 +371,7 @@ const ProductsPage: React.FC = () => {
               <button
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages}
-                className="p-2 rounded-lg border border-[#e0d8c8] bg-white text-[#5a5a5a] hover:border-[#578E7E] hover:text-[#578E7E] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-lg border border-[#E5E7EB] bg-white text-[#4B5563] hover:border-[#1557B0] hover:text-[#1557B0] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronRight size={16} />
               </button>

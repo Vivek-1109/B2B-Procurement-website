@@ -79,7 +79,7 @@ const AdminLeads: React.FC = () => {
   return (
     <AdminLayout title="Leads & Enquiries" subtitle="Manage procurement enquiries from the contact form">
       {/* Status filter tabs */}
-      <div className="flex gap-1 mb-5 bg-[#F5ECD5] p-1 rounded-sm w-fit">
+      <div className="flex gap-1 mb-5 bg-[#E5E7EB] p-1 rounded-sm w-fit">
         {tabs.map(tab => (
           <button
             key={tab.value}
@@ -90,8 +90,8 @@ const AdminLeads: React.FC = () => {
             className={cn(
               'px-4 py-1.5 text-sm font-medium rounded-sm transition-all',
               statusFilter === tab.value
-                ? 'bg-white text-[#578E7E] shadow-sm'
-                : 'text-[#7a7a7a] hover:text-[#578E7E]'
+                ? 'bg-white text-[#1557B0] shadow-xs'
+                : 'text-[#6B7280] hover:text-[#1557B0]'
             )}
           >
             {tab.label}
@@ -101,13 +101,13 @@ const AdminLeads: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-sm border border-[#e0d8c8] overflow-hidden">
+      <div className="bg-white rounded-sm border border-[#E5E7EB] overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
-            <div className="w-6 h-6 border-2 border-[#578E7E] border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-6 h-6 border-2 border-[#1557B0] border-t-transparent rounded-full animate-spin mx-auto" />
           </div>
         ) : leads.length === 0 ? (
-          <div className="p-16 text-center text-[#8a8a8a]">
+          <div className="p-16 text-center text-[#6B7280]">
             <Mail size={36} className="mx-auto mb-3 opacity-30" />
             <p className="text-sm">No leads found</p>
           </div>
@@ -115,30 +115,30 @@ const AdminLeads: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#FFFAEC] border-b border-[#e0d8c8]">
+                <tr className="bg-[#F4F8FC] border-b border-[#E5E7EB]">
                   {['Name & Company', 'Contact', 'Date', 'Status', 'Actions'].map(h => (
                     <th
                       key={h}
-                      className="text-left px-4 py-3 text-xs font-semibold text-[#7a7a7a] uppercase tracking-wider"
+                      className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider"
                     >
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F5ECD5]">
+              <tbody className="divide-y divide-[#E5E7EB]">
                 {leads.map(lead => {
                   return (
-                    <tr key={lead.id} className="hover:bg-[#FFFAEC] transition-colors">
+                    <tr key={lead.id} className="hover:bg-[#F4F8FC] transition-colors">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-[#3D3D3D]">{lead.name}</div>
-                        <div className="text-xs text-[#8a8a8a]">{lead.company}</div>
+                        <div className="font-medium text-[#1F2937]">{lead.name}</div>
+                        <div className="text-xs text-[#6B7280]">{lead.company}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-[#5a5a5a]">{lead.email}</div>
-                        <div className="text-xs text-[#8a8a8a]">{lead.phone}</div>
+                        <div className="text-[#4B5563]">{lead.email}</div>
+                        <div className="text-xs text-[#6B7280]">{lead.phone}</div>
                       </td>
-                      <td className="px-4 py-3 text-[#7a7a7a] whitespace-nowrap">
+                      <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">
                         {new Date(lead.createdAt).toLocaleDateString('en-IN', {
                           day: 'numeric',
                           month: 'short',
@@ -152,7 +152,7 @@ const AdminLeads: React.FC = () => {
                           onChange={e =>
                             handleStatusChange(lead.id, e.target.value as ContactLead['status'])
                           }
-                          className="text-xs border border-[#e0d8c8] rounded-sm px-2 py-1 bg-white focus:border-[#578E7E] outline-none"
+                          className="text-xs border border-[#E5E7EB] rounded-sm px-2 py-1 bg-white text-[#1F2937] focus:border-[#1557B0] outline-none"
                         >
                           <option value="new">New</option>
                           <option value="contacted">Contacted</option>
@@ -163,21 +163,21 @@ const AdminLeads: React.FC = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => setSelectedLead(lead)}
-                            className="p-1.5 rounded-sm text-[#578E7E] hover:bg-[#578E7E]/10 transition-colors"
+                            className="p-1.5 rounded-sm text-[#1557B0] hover:bg-[#1557B0]/10 transition-colors"
                             title="View details"
                           >
                             <Eye size={14} />
                           </button>
                           <a
                             href={`mailto:${lead.email}`}
-                            className="p-1.5 rounded-sm text-[#578E7E] hover:bg-[#578E7E]/10 transition-colors"
+                            className="p-1.5 rounded-sm text-[#1557B0] hover:bg-[#1557B0]/10 transition-colors"
                             title="Send email"
                           >
                             <Mail size={14} />
                           </a>
                           <a
                             href={`tel:${lead.phone}`}
-                            className="p-1.5 rounded-sm text-[#578E7E] hover:bg-[#578E7E]/10 transition-colors"
+                            className="p-1.5 rounded-sm text-[#1557B0] hover:bg-[#1557B0]/10 transition-colors"
                             title="Call"
                           >
                             <Phone size={14} />
@@ -201,22 +201,22 @@ const AdminLeads: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-[#e0d8c8] flex items-center justify-between">
-            <span className="text-xs text-[#8a8a8a]">
+          <div className="px-4 py-3 border-t border-[#E5E7EB] flex items-center justify-between">
+            <span className="text-xs text-[#6B7280]">
               Page {page} of {totalPages}
             </span>
             <div className="flex gap-2">
               <button
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
-                className="p-1.5 rounded-sm border border-[#e0d8c8] disabled:opacity-40 hover:border-[#578E7E] transition-colors"
+                className="p-1.5 rounded-sm border border-[#E5E7EB] disabled:opacity-40 hover:border-[#1557B0] transition-colors"
               >
                 <ChevronLeft size={14} />
               </button>
               <button
                 disabled={page === totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="p-1.5 rounded-sm border border-[#e0d8c8] disabled:opacity-40 hover:border-[#578E7E] transition-colors"
+                className="p-1.5 rounded-sm border border-[#E5E7EB] disabled:opacity-40 hover:border-[#1557B0] transition-colors"
               >
                 <ChevronRight size={14} />
               </button>
@@ -229,11 +229,11 @@ const AdminLeads: React.FC = () => {
       {selectedLead && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-sm shadow-2xl w-full max-w-lg">
-            <div className="px-6 py-4 border-b border-[#e0d8c8] flex items-center justify-between">
-              <h2 className="font-bold text-[#3D3D3D]">Enquiry Details</h2>
+            <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
+              <h2 className="font-bold text-[#1F2937]">Enquiry Details</h2>
               <button
                 onClick={() => setSelectedLead(null)}
-                className="p-1.5 rounded-sm hover:bg-[#F5ECD5] text-[#8a8a8a]"
+                className="p-1.5 rounded-sm hover:bg-[#F4F8FC] text-[#6B7280]"
               >
                 <X size={16} />
               </button>
@@ -241,35 +241,35 @@ const AdminLeads: React.FC = () => {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-xs text-[#8a8a8a] mb-1">Name</div>
-                  <div className="text-sm font-medium text-[#3D3D3D]">{selectedLead.name}</div>
+                  <div className="text-xs text-[#6B7280] mb-1">Name</div>
+                  <div className="text-sm font-medium text-[#1F2937]">{selectedLead.name}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-[#8a8a8a] mb-1">Company</div>
-                  <div className="text-sm font-medium text-[#3D3D3D]">{selectedLead.company}</div>
+                  <div className="text-xs text-[#6B7280] mb-1">Company</div>
+                  <div className="text-sm font-medium text-[#1F2937]">{selectedLead.company}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-[#8a8a8a] mb-1">Email</div>
+                  <div className="text-xs text-[#6B7280] mb-1">Email</div>
                   <a
                     href={`mailto:${selectedLead.email}`}
-                    className="text-sm text-[#578E7E] hover:underline"
+                    className="text-sm text-[#1557B0] hover:underline"
                   >
                     {selectedLead.email}
                   </a>
                 </div>
                 <div>
-                  <div className="text-xs text-[#8a8a8a] mb-1">Phone</div>
+                  <div className="text-xs text-[#6B7280] mb-1">Phone</div>
                   <a
                     href={`tel:${selectedLead.phone}`}
-                    className="text-sm text-[#578E7E] hover:underline"
+                    className="text-sm text-[#1557B0] hover:underline"
                   >
                     {selectedLead.phone}
                   </a>
                 </div>
               </div>
               <div>
-                <div className="text-xs text-[#8a8a8a] mb-2">Requirement</div>
-                <p className="text-sm text-[#3D3D3D] bg-[#FFFAEC] p-3 rounded-sm border border-[#F5ECD5] leading-relaxed">
+                <div className="text-xs text-[#6B7280] mb-2">Requirement</div>
+                <p className="text-sm text-[#1F2937] bg-[#F4F8FC] p-3 rounded-sm border border-[#E5E7EB] leading-relaxed">
                   {selectedLead.message}
                 </p>
               </div>
@@ -279,7 +279,7 @@ const AdminLeads: React.FC = () => {
                 >
                   {statusConfig[selectedLead.status].label}
                 </span>
-                <span className="text-xs text-[#8a8a8a]">
+                <span className="text-xs text-[#6B7280]">
                   {new Date(selectedLead.createdAt).toLocaleString('en-IN')}
                 </span>
               </div>
@@ -292,8 +292,8 @@ const AdminLeads: React.FC = () => {
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-sm shadow-2xl p-6 max-w-sm w-full">
-            <h3 className="font-bold text-[#3D3D3D] mb-2">Delete Enquiry?</h3>
-            <p className="text-sm text-[#7a7a7a] mb-5">
+            <h3 className="font-bold text-[#1F2937] mb-2">Delete Enquiry?</h3>
+            <p className="text-sm text-[#6B7280] mb-5">
               This will permanently remove this lead. This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">

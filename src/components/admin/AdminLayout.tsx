@@ -34,7 +34,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, subtitle }) 
   };
 
   return (
-    <div className="min-h-screen bg-[#F5ECD5] flex">
+    <div className="min-h-screen bg-[#F4F8FC] flex">
       {/* Sidebar overlay (mobile) */}
       {sidebarOpen && (
         <div
@@ -46,20 +46,20 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, subtitle }) 
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 bottom-0 w-60 bg-white border-r border-[#e0d8c8] z-40 flex flex-col',
+          'fixed top-0 left-0 bottom-0 w-60 bg-white border-r border-[#E5E7EB] z-40 flex flex-col',
           'transition-transform duration-300',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         {/* Logo */}
-        <div className="p-5 border-b border-[#e0d8c8]">
+        <div className="p-5 border-b border-[#E5E7EB]">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-[#578E7E] rounded-sm flex items-center justify-center">
-              <span className="text-[#FFFAEC] font-bold text-xs">PS</span>
+            <div className="w-8 h-8 bg-[#1557B0] rounded-sm flex items-center justify-center">
+              <span className="text-white font-bold text-xs">PS</span>
             </div>
             <div>
-              <div className="font-bold text-[#3D3D3D] text-sm">APR Services</div>
-              <div className="text-[0.6rem] text-[#578E7E] uppercase tracking-wider">Admin Panel</div>
+              <div className="font-bold text-[#1F2937] text-sm">APR Services</div>
+              <div className="text-[0.6rem] text-[#1557B0] uppercase tracking-wider font-semibold">Admin Panel</div>
             </div>
           </Link>
         </div>
@@ -87,14 +87,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, subtitle }) 
         </nav>
 
         {/* User + Logout */}
-        <div className="p-4 border-t border-[#e0d8c8]">
+        <div className="p-4 border-t border-[#E5E7EB]">
           <div className="flex items-center gap-3 mb-3 px-1">
-            <div className="w-7 h-7 rounded-full bg-[#578E7E] flex items-center justify-center">
-              <span className="text-[#FFFAEC] text-xs font-bold">A</span>
+            <div className="w-7 h-7 rounded-full bg-[#1557B0] flex items-center justify-center">
+              <span className="text-white text-xs font-bold">A</span>
             </div>
             <div className="min-w-0">
-              <div className="text-xs font-medium text-[#3D3D3D] truncate">{admin?.email}</div>
-              <div className="text-[0.6rem] text-[#8a8a8a] capitalize">{admin?.role}</div>
+              <div className="text-xs font-medium text-[#1F2937] truncate">{admin?.email}</div>
+              <div className="text-[0.6rem] text-[#6B7280] capitalize">{admin?.role}</div>
             </div>
           </div>
           <button
@@ -110,22 +110,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, subtitle }) 
       {/* Main content */}
       <div className="flex-1 lg:ml-60 flex flex-col min-h-screen">
         {/* Top bar */}
-        <header className="bg-white border-b border-[#e0d8c8] px-5 py-4 flex items-center gap-4 sticky top-0 z-20">
+        <header className="bg-white border-b border-[#E5E7EB] px-5 py-4 flex items-center gap-4 sticky top-0 z-20">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-1.5 rounded-sm text-[#3D3D3D] hover:bg-[#F5ECD5] transition-colors"
+            className="lg:hidden p-1.5 rounded-sm text-[#1F2937] hover:bg-[#F4F8FC] transition-colors"
           >
             {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
           <div>
-            <h1 className="text-base font-bold text-[#3D3D3D]">{title}</h1>
-            {subtitle && <p className="text-xs text-[#8a8a8a]">{subtitle}</p>}
+            <h1 className="text-base font-bold text-[#1F2937]">{title}</h1>
+            {subtitle && <p className="text-xs text-[#6B7280]">{subtitle}</p>}
           </div>
           <div className="ml-auto flex items-center gap-2">
             <Link
               to="/"
               target="_blank"
-              className="text-xs text-[#578E7E] hover:underline font-medium"
+              className="text-xs text-[#1557B0] hover:underline font-medium"
             >
               View Website →
             </Link>

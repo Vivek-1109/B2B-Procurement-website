@@ -1,64 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, ArrowUp, FileText } from 'lucide-react';
+import { MessageSquare, ArrowUp, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '../utils/cn';
 
 const FloatingActions: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
-    const handler = () => setShowScrollTop(window.scrollY > 400);
+    const handler = () => setShowScrollTop(window.scrollY > 350);
     window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-  const scrollToContact = () => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
-    <div className="fixed bottom-6 right-5 z-40 flex flex-col gap-3 items-end">
-      {/* WhatsApp */}
+    <aside aria-label="Quick Actions" className="fixed bottom-6 right-5 z-40 flex flex-col gap-2.5 items-end select-none">
+      {/* WhatsApp Quick Chat */}
       <a
-        href="https://wa.me/919911394456?text=Hi, I'd like to discuss a procurement requirement."
+        href="https://wa.me/919911394456?text=Hello%20APR%20Services,%20I%20would%20like%20to%20enquire%20about%20aviation/industrial%20procurement."
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex items-center gap-2 bg-[#25D366] text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 overflow-hidden"
+        className="group flex items-center bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full p-2.5 shadow-lg shadow-emerald-600/25 hover:shadow-xl hover:shadow-emerald-600/35 border border-white/20 transition-all duration-300 transform hover:-translate-y-0.5"
         title="Chat on WhatsApp"
+        aria-label="Chat on WhatsApp"
       >
-        <div className="shrink-0 w-12 h-12 flex items-center justify-center">
-          <MessageCircle size={20} />
+        <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+          <MessageSquare size={18} className="fill-white stroke-none" />
         </div>
-        <span className="-group-hover:hidden group-hover:pr-4 group-hover:text-sm group-hover:font-medium whitespace-nowrap max-w-0 group-hover:max-w-xs transition-all duration-300 overflow-hidden group-hover:opacity-100">
+        <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap text-xs font-bold tracking-wide group-hover:px-2 opacity-0 group-hover:opacity-100">
           WhatsApp Us
         </span>
       </a>
 
-      {/* Sticky Quote Button */}
-      <button
-        onClick={scrollToContact}
-        className="group flex items-center gap-2 bg-[#578E7E] text-white rounded-full shadow-lg hover:shadow-xl hover:bg-[#3a6b5e] hover:scale-105 transition-all duration-200 overflow-hidden"
-        title="Request a Quote"
+      {/* Quick Quote Floating Link */}
+      <Link
+        to="/contact"
+        className="group flex items-center bg-[#1557B0] hover:bg-[#0B2A4A] text-white rounded-full p-2.5 shadow-lg shadow-blue-900/25 hover:shadow-xl hover:shadow-blue-900/35 border border-white/20 transition-all duration-300 transform hover:-translate-y-0.5"
+        title="Request a Fast Quote"
+        aria-label="Request a Quote"
       >
-        <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
-          <FileText size={20} />
+        <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+          <Send size={16} />
         </div>
-        <span className="group-hover:pr-4 text-sm font-medium whitespace-nowrap max-w-0 group-hover:max-w-xs transition-all duration-300 overflow-hidden opacity-0 group-hover:opacity-100">
-          Get a Quote
+        <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap text-xs font-bold tracking-wide group-hover:px-2 opacity-0 group-hover:opacity-100">
+          Request Quote
         </span>
-      </button>
+      </Link>
 
-      {/* Scroll to top */}
+      {/* Scroll to Top Button */}
       <button
         onClick={scrollToTop}
         className={cn(
-          'w-10 h-10 rounded-full bg-[#3D3D3D] text-white shadow-lg hover:bg-[#2a2a2a] hover:scale-105 transition-all duration-200 flex items-center justify-center',
-          showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+          'w-9 h-9 rounded-full bg-white text-[#1F2937] border border-[#E5E7EB] shadow-md hover:bg-[#1557B0] hover:text-white hover:border-[#1557B0] transition-all duration-300 flex items-center justify-center transform hover:-translate-y-0.5',
+          showScrollTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-3 pointer-events-none'
         )}
-        title="Scroll to top"
+        title="Scroll to Top"
         aria-label="Scroll to top"
       >
-        <ArrowUp size={16} />
+        <ArrowUp size={15} />
       </button>
-    </div>
+    </aside>
   );
 };
 

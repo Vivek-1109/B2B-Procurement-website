@@ -1,195 +1,214 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Award, Layers } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../ui/Button';
 
-const trustBadges = [
-  { icon: ShieldCheck, text: 'ISO 9001:2015 Quality Assured' },
-  { icon: Award, text: 'MSME Registered Partner' },
-];
+interface HeroSlide {
+  id: number;
+  image: string;
+  alt: string;
+  tag: string;
+  headline: string;
+  description: string;
+}
 
-const coreCapabilities = [
-  { name: 'Adhesives & Sealants', desc: 'Structural epoxy, RTV & film adhesives' },
-  { name: 'Lubricants & Oils', desc: 'Aviation turbine oils & hydraulic fluids' },
-  { name: 'Coatings & Paints', desc: 'Anti-corrosive aerospace primers' },
-  { name: 'Cleaners & Chemicals', desc: 'NDT penetrants & industrial washing compounds' },
+const slides: HeroSlide[] = [
+  {
+    id: 1,
+    image: '/hero-bg.jpg',
+    alt: 'Aviation and industrial procurement supply chain facility',
+    tag: 'B2B Sourcing & Supply',
+    headline: 'Industrial & Aviation Procurement Solutions',
+    description: 'Reliable sourcing of quality products for industrial, engineering and aviation requirements.',
+  },
+  {
+    id: 2,
+    image: '/hero-bg-2.jpg',
+    alt: 'Commercial aircraft turbine maintenance and aerospace consumables',
+    tag: 'Aerospace & Aviation Consumables',
+    headline: 'Certified Aerospace & Industrial Supplies',
+    description: 'High-performance adhesives, lubricants, sealants, and coatings delivered with full quality compliance.',
+  },
+  {
+    id: 3,
+    image: '/hero-bg-3.jpg',
+    alt: 'Industrial chemical and materials procurement logistics',
+    tag: 'Enterprise Bulk Procurement',
+    headline: 'Streamlined Sourcing for Large Enterprises',
+    description: 'Direct access to verified global manufacturers with transparent bulk pricing and on-time logistics.',
+  },
 ];
 
 const Hero: React.FC = () => {
-  const [visible, setVisible] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), 100);
-    return () => clearTimeout(timer);
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
   }, []);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  }, []);
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  // Auto advance every 4.5 seconds reliably
+  useEffect(() => {
+    const timer = setInterval(() => {
+      nextSlide();
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [nextSlide, currentSlide]);
+
+  // Touch handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (distance > minSwipeDistance) {
+      nextSlide(); // swipe left -> next slide
+    } else if (distance < -minSwipeDistance) {
+      prevSlide(); // swipe right -> previous slide
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center overflow-hidden bg-[#FFFAEC]"
-      style={{
-        background: 'linear-gradient(135deg, #FFFAEC 0%, #F5ECD5 40%, #FFFAEC 100%)',
-      }}
+      className="relative h-[calc(100vh-4rem)] md:h-[calc(100vh-4.5rem)] min-h-[580px] flex items-center justify-center overflow-hidden bg-[#0B2A4A] select-none"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      aria-label="Hero Section"
     >
-      {/* Background geometric elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute -top-20 -right-20 w-[500px] h-[500px] rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #578E7E 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute bottom-0 -left-40 w-[400px] h-[400px] rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #578E7E 0%, transparent 70%)' }}
-        />
-        {/* Grid pattern */}
-        <svg
-          className="absolute inset-0 w-full h-full opacity-[0.03]"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#3D3D3D" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#hero-grid)" />
-        </svg>
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-0">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-screen lg:min-h-0 py-16">
-          {/* Left Content */}
+      {/* Background Slides with smooth fade transition */}
+      {slides.map((slide, index) => {
+        const isActive = index === currentSlide;
+        return (
           <div
-            className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              isActive ? 'opacity-100 z-0' : 'opacity-0 -z-10 pointer-events-none'
+            }`}
           >
-            {/* Label */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#578E7E]/10 border border-[#578E7E]/20 rounded-sm mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#578E7E] animate-pulse" />
-              <span className="text-xs font-semibold text-[#578E7E] tracking-widest uppercase">
-                B2B Sourcing & Supply
-              </span>
-            </div>
+            <img
+              src={slide.image}
+              alt={slide.alt}
+              className={`w-full h-full object-cover object-center transform transition-transform duration-[6000ms] ease-out ${
+                isActive ? 'scale-105' : 'scale-100'
+              }`}
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+          </div>
+        );
+      })}
 
-            {/* Headline */}
-            <h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#3D3D3D] leading-[1.1] mb-6"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-            >
-              Industrial Sourcing,{' '}
-              <span className="text-[#578E7E] relative">
-                Delivered in Bulk.
-                <svg
-                  className="absolute -bottom-2 left-0 w-full"
-                  height="6"
-                  viewBox="0 0 300 6"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M0,3 Q75,0 150,3 Q225,6 300,3"
-                    stroke="#578E7E"
-                    strokeWidth="2"
-                    fill="none"
-                    strokeDasharray="300"
-                    strokeDashoffset="0"
-                    opacity="0.5"
-                  />
-                </svg>
-              </span>
-            </h1>
+      {/* Subtle dark navy overlay for crisp text readability */}
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          background:
+            'linear-gradient(to right, rgba(11, 42, 74, 0.88) 0%, rgba(11, 42, 74, 0.75) 50%, rgba(11, 42, 74, 0.65) 100%)',
+        }}
+      />
 
-            {/* Subtext */}
-            <p className="text-base sm:text-lg text-[#5a5a5a] leading-relaxed mb-8 max-w-xl">
-              High-performance adhesives, lubricants, sealants, coatings, and tapes for aviation and industrial applications. Sourced directly with full certification.
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-10">
-              <Link to="/products">
-                <Button variant="primary" size="lg" className="group w-full sm:w-auto justify-center">
-                  Browse Catalogue
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Link to="/contact">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto justify-center">
-                  Request Quote
-                </Button>
-              </Link>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="flex flex-wrap gap-6 border-t border-[#F5ECD5] pt-6">
-              {trustBadges.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2.5 text-sm text-[#5a5a5a]">
-                  <Icon size={16} className="text-[#578E7E]" />
-                  <span className="font-semibold text-xs uppercase tracking-wider">{text}</span>
-                </div>
-              ))}
-            </div>
+      {/* Hero Content Container */}
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+        <div className="max-w-3xl">
+          {/* Tag / Category Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#1557B0]/20 border border-[#1557B0]/40 rounded-sm mb-5 backdrop-blur-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] animate-pulse" />
+            <span className="text-xs font-semibold text-[#93C5FD] tracking-widest uppercase">
+              {slides[currentSlide].tag}
+            </span>
           </div>
 
-          {/* Right Content — Product Category Highlights Grid */}
-          <div
-            className={`transition-all duration-700 delay-200 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          {/* Headline */}
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.18] mb-5 tracking-tight"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
-            <div className="relative">
-              {/* Main card */}
-              <div className="bg-white rounded-sm shadow-xl border border-[#F5ECD5] p-6 md:p-8 relative z-10">
-                <div className="flex items-center gap-2 mb-6 border-b border-[#F5ECD5] pb-4">
-                  <Layers size={18} className="text-[#578E7E]" />
-                  <span className="text-sm font-bold text-[#3D3D3D]">Core Sourcing Categories</span>
-                </div>
+            {slides[currentSlide].headline}
+          </h1>
 
-                {/* Sourcing capabilities grid */}
-                <div className="grid gap-4">
-                  {coreCapabilities.map((cap, idx) => (
-                    <Link
-                      key={cap.name}
-                      to={`/products?category=${encodeURIComponent(
-                        cap.name === 'Lubricants & Oils' ? 'Lubricants, Oils, & Greases' :
-                        cap.name === 'Cleaners & Chemicals' ? 'Cleaners & NDT Chemicals' : cap.name
-                      )}`}
-                      className="group flex items-center justify-between p-3.5 rounded-sm border border-[#F5ECD5]/60 bg-[#FFFAEC]/10 hover:bg-[#FFFAEC]/40 hover:border-[#578E7E]/30 transition-all duration-200"
-                    >
-                      <div>
-                        <div className="text-sm font-bold text-[#3D3D3D] group-hover:text-[#578E7E] transition-colors">
-                          {cap.name}
-                        </div>
-                        <div className="text-xs text-[#8a8a8a] mt-0.5">{cap.desc}</div>
-                      </div>
-                      <div className="w-7 h-7 rounded-full bg-[#F5ECD5] flex items-center justify-center text-[#578E7E] group-hover:bg-[#578E7E] group-hover:text-white transition-all duration-200">
-                        <ArrowRight size={12} />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+          {/* Short Description */}
+          <p className="text-sm sm:text-base md:text-lg text-slate-200 leading-relaxed mb-8 max-w-2xl font-normal">
+            {slides[currentSlide].description}
+          </p>
 
-                {/* Bottom link */}
-                <div className="mt-6 text-center">
-                  <Link
-                    to="/products"
-                    className="text-xs font-bold text-[#578E7E] hover:text-[#3a6b5e] transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    View All Sourcing Categories <ArrowRight size={12} />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Decorative borders */}
-              <div className="absolute -top-4 -right-4 w-24 h-24 border-2 border-teal-900/20 rounded-sm z-0" />
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-[#ded3b6]/50 rounded-sm z-0" />
-            </div>
+          {/* Two CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <Link to="/products">
+              <Button
+                variant="primary"
+                size="lg"
+                className="group w-full sm:w-auto justify-center bg-[#1557B0] hover:bg-[#0F448C] text-white font-semibold shadow-md"
+              >
+                Explore Products
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform ml-1" />
+              </Button>
+            </Link>
+            <Link to="/contact">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto justify-center border-2 border-white/80 text-white hover:bg-white hover:text-[#0B2A4A] font-semibold bg-transparent transition-all"
+              >
+                Request a Quote
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce">
-        <div className="w-px h-8 bg-[#578E7E]/40" />
-        <div className="w-1.5 h-1.5 rounded-full bg-[#578E7E]/60" />
+      {/* Carousel Navigation Arrows */}
+      <button
+        onClick={prevSlide}
+        className="hidden md:flex absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 items-center justify-center rounded-full bg-black/30 hover:bg-black/60 text-white/90 hover:text-white border border-white/20 backdrop-blur-xs transition-all shadow-sm"
+        aria-label="Previous Slide"
+      >
+        <ChevronLeft size={20} />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="hidden md:flex absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 items-center justify-center rounded-full bg-black/30 hover:bg-black/60 text-white/90 hover:text-white border border-white/20 backdrop-blur-xs transition-all shadow-sm"
+        aria-label="Next Slide"
+      >
+        <ChevronRight size={20} />
+      </button>
+
+      {/* Carousel Dots / Slide Indicators */}
+      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`transition-all duration-300 rounded-full ${
+              index === currentSlide
+                ? 'w-7 h-2 bg-[#1557B0] shadow-xs'
+                : 'w-2 h-2 bg-white/40 hover:bg-white/70'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
     </section>
   );
 };
 
 export default Hero;
-
