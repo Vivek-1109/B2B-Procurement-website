@@ -14,6 +14,8 @@ import ScrollToTop from './components/ScrollToTop';
 import FloatingActions from './components/FloatingActions';
 import ClientShowcase from './components/sections/ClientShowcase';
 
+import { useSEO } from './hooks/useSEO';
+
 // Lazy load pages not needed on initial load
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -28,13 +30,59 @@ const ContactPage = lazy(() => import('./pages/ContactPage'));
 
 function LoadingSpinner() {
   return (
-    <div className="min-h-screen bg-[#F5ECD5] flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[#578E7E] border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-[#F4F8FC] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-[#1557B0] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }
 
 function HomePage() {
+  const homeSchema = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      'name': 'APR Services Enterprise',
+      'url': 'https://aprsvs.com',
+      'logo': 'https://aprsvs.com/favicon.svg',
+      'contactPoint': {
+        '@type': 'ContactPoint',
+        'telephone': '+91-99113-94456',
+        'contactType': 'sales',
+        'email': 'Aprservices20@gmail.com',
+        'areaServed': 'IN',
+        'availableLanguage': 'en'
+      },
+      'address': {
+        '@type': 'PostalAddress',
+        'streetAddress': 'RZ-B3 243/D, Vijay Enclave, South West Delhi',
+        'addressLocality': 'New Delhi',
+        'postalCode': '110045',
+        'addressCountry': 'IN'
+      }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      'name': 'APR Services Enterprise',
+      'url': 'https://aprsvs.com',
+      'potentialAction': {
+        '@type': 'SearchAction',
+        'target': {
+          '@type': 'EntryPoint',
+          'urlTemplate': 'https://aprsvs.com/products?search={search_term_string}'
+        },
+        'query-input': 'required name=search_term_string'
+      }
+    }
+  ];
+
+  useSEO({
+    title: 'APR Services Enterprise | Aviation & Industrial Consumables Sourcing',
+    description: 'APR Services Enterprise is a premier B2B distributor of aviation & industrial consumables. We supply high-performance adhesives, sealants, lubricants, oils, and coatings in bulk with complete quality certification.',
+    canonicalUrl: 'https://aprsvs.com/',
+    schemaMarkup: homeSchema
+  });
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />

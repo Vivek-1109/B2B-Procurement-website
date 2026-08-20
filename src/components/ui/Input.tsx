@@ -19,7 +19,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-[#3D3D3D]">
+          <label htmlFor={inputId} className="text-sm font-medium text-[#1F2937]">
             {label}
             {props.required && <span className="text-red-500 ml-0.5">*</span>}
           </label>
@@ -28,15 +28,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-4 py-2.5 text-sm rounded-sm border bg-white text-[#3D3D3D] placeholder-[#aaa]',
-            'border-[#e0d8c8] focus:border-[#578E7E] focus:ring-2 focus:ring-[#578E7E]/20 outline-none transition-all duration-200',
+            'w-full px-4 py-2.5 text-sm rounded-sm border bg-white text-[#1F2937] placeholder-[#9CA3AF]',
+            'border-[#E5E7EB] focus:border-[#1557B0] focus:ring-2 focus:ring-[#1557B0]/20 outline-none transition-all duration-200',
             error && 'border-red-400 focus:border-red-400 focus:ring-red-100',
             className
           )}
           {...props}
         />
         {error && <p className="text-xs text-red-500">{error}</p>}
-        {helperText && !error && <p className="text-xs text-[#8a8a8a]">{helperText}</p>}
+        {helperText && !error && <p className="text-xs text-[#6B7280]">{helperText}</p>}
       </div>
     );
   }
@@ -50,7 +50,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-[#3D3D3D]">
+          <label htmlFor={inputId} className="text-sm font-medium text-[#1F2937]">
             {label}
             {props.required && <span className="text-red-500 ml-0.5">*</span>}
           </label>
@@ -60,15 +60,15 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={inputId}
           rows={rows}
           className={cn(
-            'w-full px-4 py-2.5 text-sm rounded-sm border bg-white text-[#3D3D3D] placeholder-[#aaa] resize-none',
-            'border-[#e0d8c8] focus:border-[#578E7E] focus:ring-2 focus:ring-[#578E7E]/20 outline-none transition-all duration-200',
+            'w-full px-4 py-2.5 text-sm rounded-sm border bg-white text-[#1F2937] placeholder-[#9CA3AF] resize-none',
+            'border-[#E5E7EB] focus:border-[#1557B0] focus:ring-2 focus:ring-[#1557B0]/20 outline-none transition-all duration-200',
             error && 'border-red-400 focus:border-red-400 focus:ring-red-100',
             className
           )}
           {...props}
         />
         {error && <p className="text-xs text-red-500">{error}</p>}
-        {helperText && !error && <p className="text-xs text-[#8a8a8a]">{helperText}</p>}
+        {helperText && !error && <p className="text-xs text-[#6B7280]">{helperText}</p>}
       </div>
     );
   }
@@ -88,7 +88,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-[#3D3D3D]">
+          <label htmlFor={inputId} className="text-sm font-medium text-[#1F2937]">
             {label}
             {props.required && <span className="text-red-500 ml-0.5">*</span>}
           </label>
@@ -97,8 +97,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-4 py-2.5 text-sm rounded-sm border bg-white text-[#3D3D3D]',
-            'border-[#e0d8c8] focus:border-[#578E7E] focus:ring-2 focus:ring-[#578E7E]/20 outline-none transition-all duration-200',
+            'w-full px-4 py-2.5 text-sm rounded-sm border bg-white text-[#1F2937]',
+            'border-[#E5E7EB] focus:border-[#1557B0] focus:ring-2 focus:ring-[#1557B0]/20 outline-none transition-all duration-200',
             error && 'border-red-400',
             className
           )}

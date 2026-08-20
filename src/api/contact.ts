@@ -7,6 +7,7 @@ export interface ContactPayload {
   phone: string;
   message: string;
   honeypot?: string;
+  formStartedAt?: string;
 }
 
 export interface QuotePayload extends ContactPayload {

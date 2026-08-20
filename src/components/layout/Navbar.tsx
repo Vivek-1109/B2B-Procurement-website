@@ -1,33 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import Button from '../ui/Button';
+
 const navLinks = [
-  { label: 'Home', href: '/' },
+  { label: 'Home', href: '/', isRoute: true },
   { label: 'Products', href: '/products', isRoute: true },
-  { label: 'Contact', href: '/contact', isRoute: true },
+  { label: 'Contact Us', href: '/contact', isRoute: true },
 ];
 
 const Navbar: React.FC = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isAdminPage = location.pathname.startsWith('/admin');
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
     setMobileOpen(false);
   }, [location]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, isRoute?: boolean) => {
-    if (isRoute) return; // Let React Router handle it
+    if (isRoute) return;
     if (href === '/') {
       e.preventDefault();
       if (location.pathname !== '/') navigate('/');
@@ -35,59 +29,47 @@ const Navbar: React.FC = () => {
       setMobileOpen(false);
       return;
     }
-    if (href.startsWith('/#')) {
-      e.preventDefault();
-      const id = href.replace('/#', '');
-      if (location.pathname !== '/') {
-        navigate('/');
-        setTimeout(() => {
-          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 300);
-      } else {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      setMobileOpen(false);
-    }
   };
-
-  const isHomePage = location.pathname === '/';
 
   if (isAdminPage) return null;
 
   return (
-    <header
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        !isHomePage || isScrolled
-          ? 'bg-[#FFFAEC]/97 backdrop-blur-md shadow-sm border-b border-[#F5ECD5]'
-          : 'bg-transparent'
-      )}
-    >
+    <header className="sticky top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E5E7EB] shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 md:h-18">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 bg-[#578E7E] rounded-sm flex items-center justify-center group-hover:bg-[#3a6b5e] transition-colors">
-              <span className="text-[#FFFAEC] font-bold text-sm tracking-tight">PS</span>
+            <div className="w-11 h-11 rounded-lg overflow-hidden flex items-center justify-center bg-white border border-[#E5E7EB] shadow-2xs group-hover:border-[#1557B0]/40 group-hover:scale-105 transition-all duration-300">
+              <img
+                src="/apr-logo.jpg"
+                alt="APR Services Logo"
+                className="w-full h-full object-contain p-0.5"
+                loading="eager"
+              />
             </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-bold text-[#3D3D3D] text-base tracking-tight">APR Services</span>
-              <span className="text-[0.65rem] text-[#578E7E] tracking-[0.12em] uppercase font-medium">Enterprise</span>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-[#1F2937] leading-none group-hover:text-[#1557B0] transition-colors">
+                APR Services
+              </span>
+              <span className="text-[9px] tracking-[0.22em] uppercase font-bold text-[#1557B0] mt-0.5">
+                Enterprise Sourcing
+              </span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map(link =>
-              link.isRoute ? (
+          <nav className="hidden md:flex items-center gap-1.5">
+            {navLinks.map(link => {
+              const isActive = location.pathname === link.href;
+              return link.isRoute ? (
                 <Link
                   key={link.label}
                   to={link.href}
                   className={cn(
-                    'px-4 py-2 text-sm font-medium rounded-sm transition-all duration-200 animated-underline',
-                    location.pathname === link.href
-                      ? 'text-[#578E7E] bg-[#F5ECD5]'
-                      : 'text-[#5a5a5a] hover:text-[#578E7E] hover:bg-[#F5ECD5]'
+                    'px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200',
+                    isActive
+                      ? 'text-[#1557B0] bg-[#F4F8FC] shadow-2xs'
+                      : 'text-[#4B5563] hover:text-[#1557B0] hover:bg-[#F4F8FC]'
                   )}
                 >
                   {link.label}
@@ -97,27 +79,32 @@ const Navbar: React.FC = () => {
                   key={link.label}
                   href={link.href}
                   onClick={e => handleNavClick(e, link.href, link.isRoute)}
-                  className="px-4 py-2 text-sm font-medium text-[#5a5a5a] hover:text-[#578E7E] rounded-sm hover:bg-[#F5ECD5] transition-all duration-200 animated-underline"
+                  className="px-4 py-2 text-sm font-semibold text-[#4B5563] hover:text-[#1557B0] hover:bg-[#F4F8FC] rounded-lg transition-all duration-200"
                 >
                   {link.label}
                 </a>
-              )
-            )}
+              );
+            })}
           </nav>
 
-          {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
+          {/* Desktop CTA */}
+          <div className="hidden md:flex items-center gap-3">
             <Link to="/contact">
-              <Button variant="primary" size="sm">
+              <Button
+                variant="primary"
+                size="sm"
+                className="bg-[#1557B0] hover:bg-[#0B2A4A] text-white font-bold shadow-xs px-4 py-2 text-xs uppercase tracking-wider rounded-md"
+              >
                 Request Quote
+                <ArrowRight size={13} className="ml-1" />
               </Button>
             </Link>
           </div>
 
-          {/* Mobile Toggle */}
+          {/* Mobile Toggle Button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 rounded-sm text-[#3D3D3D] hover:bg-[#F5ECD5] transition-colors"
+            className="md:hidden p-2 rounded-lg text-[#1F2937] hover:bg-[#F4F8FC] transition-colors border border-[#E5E7EB]"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -125,39 +112,37 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Drawer */}
       <div
         className={cn(
-          'lg:hidden overflow-hidden transition-all duration-300',
-          mobileOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'
+          'md:hidden overflow-hidden transition-all duration-300 bg-white border-t border-[#E5E7EB] shadow-lg',
+          mobileOpen ? 'max-h-[350px] opacity-100' : 'max-h-0 opacity-0 border-none'
         )}
       >
-        <div className="bg-[#FFFAEC] border-t border-[#F5ECD5] px-4 py-4 space-y-1">
-          {navLinks.map(link =>
-              link.isRoute ? (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className="block px-4 py-2.5 text-sm font-medium text-[#5a5a5a] hover:text-[#578E7E] hover:bg-[#F5ECD5] rounded-sm transition-colors"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={e => handleNavClick(e, link.href, link.isRoute)}
-                  className="block px-4 py-2.5 text-sm font-medium text-[#5a5a5a] hover:text-[#578E7E] hover:bg-[#F5ECD5] rounded-sm transition-colors"
-                >
-                  {link.label}
-                </a>
-              )
-            )}
-          <div className="pt-3 border-t border-[#F5ECD5]">
+        <div className="px-4 py-4 space-y-2">
+          {navLinks.map(link => {
+            const isActive = location.pathname === link.href;
+            return (
+              <Link
+                key={link.label}
+                to={link.href}
+                className={cn(
+                  'block px-4 py-2.5 text-sm font-semibold rounded-lg transition-colors',
+                  isActive
+                    ? 'text-[#1557B0] bg-[#F4F8FC]'
+                    : 'text-[#4B5563] hover:text-[#1557B0] hover:bg-[#F4F8FC]'
+                )}
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+          <div className="pt-3 border-t border-[#E5E7EB]">
             <Link to="/contact" onClick={() => setMobileOpen(false)}>
-              <Button variant="primary" size="sm" className="w-full">
+              <Button variant="primary" size="md" className="w-full justify-center bg-[#1557B0] text-white">
                 Request Quote
+                <ArrowRight size={14} className="ml-1" />
               </Button>
             </Link>
           </div>

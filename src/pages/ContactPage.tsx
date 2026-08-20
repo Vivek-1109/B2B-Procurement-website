@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +11,7 @@ import { Input, Textarea } from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { submitContactForm } from '../api/contact';
 import type { ContactFormData } from '../types';
+import { useSEO } from '../hooks/useSEO';
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -47,6 +48,7 @@ const ContactPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const formStartedAtRef = useRef(Date.now().toString());
 
   const {
     register,
@@ -81,10 +83,12 @@ const ContactPage: React.FC = () => {
       const payload = {
         ...data,
         productName: productName || undefined,
+        formStartedAt: formStartedAtRef.current,
       };
       await submitContactForm(payload);
       setSubmitted(true);
       reset();
+      formStartedAtRef.current = Date.now().toString();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
     } finally {
@@ -92,16 +96,54 @@ const ContactPage: React.FC = () => {
     }
   };
 
+  const contactSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    'name': 'APR Services Enterprise',
+    'image': 'https://aprsvs.com/favicon.svg',
+    'telephone': '+91 99113 94456',
+    'email': 'Aprservices20@gmail.com',
+    'url': 'https://aprsvs.com/contact',
+    'address': {
+      '@type': 'PostalAddress',
+      'streetAddress': 'RZ-B3 243/D, Vijay Enclave, South West Delhi',
+      'addressLocality': 'New Delhi',
+      'postalCode': '110045',
+      'addressCountry': 'IN'
+    },
+    'openingHoursSpecification': [
+      {
+        '@type': 'OpeningHoursSpecification',
+        'dayOfWeek': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        'opens': '09:00',
+        'closes': '18:00'
+      },
+      {
+        '@type': 'OpeningHoursSpecification',
+        'dayOfWeek': 'Saturday',
+        'opens': '10:00',
+        'closes': '14:00'
+      }
+    ]
+  };
+
+  useSEO({
+    title: 'Request a Quote | B2B Procurement | APR Services Enterprise',
+    description: 'Get a fast quote for aviation and industrial consumables. APR Services supplies ISO-certified adhesives, sealants, lubricants, oils, coatings, and tapes in bulk.',
+    canonicalUrl: 'https://aprsvs.com/contact',
+    schemaMarkup: contactSchema
+  });
+
   return (
     <>
       <Navbar />
 
-      <div className="bg-[#FFFAEC] min-h-screen pt-24 pb-16">
+      <div className="bg-[#F4F8FC] min-h-screen pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back button */}
           <Link
             to={productName ? -1 as any : "/products"}
-            className="inline-flex items-center gap-1.5 text-[#578E7E] hover:text-[#3a6b5e] text-sm mb-8 transition-colors font-medium"
+            className="inline-flex items-center gap-1.5 text-[#1557B0] hover:text-[#0B2A4A] text-sm mb-8 transition-colors font-medium"
           >
             <ArrowLeft size={14} /> Back
           </Link>
@@ -111,6 +153,7 @@ const ContactPage: React.FC = () => {
             title="Request a Procurement Quote"
             subtitle="Fill in your requirements and our team will respond with a tailored proposal within 24 business hours."
             className="mb-12"
+            headingLevel="h1"
           />
 
           <div className="grid lg:grid-cols-5 gap-10 lg:gap-14">
@@ -119,22 +162,22 @@ const ContactPage: React.FC = () => {
               <div className="space-y-6 mb-8">
                 {contactInfo.map(({ icon: Icon, label, value, href }) => (
                   <div key={label} className="flex gap-4">
-                    <div className="w-10 h-10 rounded-sm bg-[#578E7E]/10 flex items-center justify-center flex-shrink-0">
-                      <Icon size={18} className="text-[#578E7E]" />
+                    <div className="w-10 h-10 rounded-sm bg-[#1557B0]/10 flex items-center justify-center flex-shrink-0">
+                      <Icon size={18} className="text-[#1557B0]" />
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-[#8a8a8a] uppercase tracking-wider mb-1">
+                      <div className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-1">
                         {label}
                       </div>
                       {href ? (
                         <a
                           href={href}
-                          className="text-sm text-[#3D3D3D] hover:text-[#578E7E] transition-colors"
+                          className="text-sm text-[#1F2937] hover:text-[#1557B0] transition-colors"
                         >
                           {value}
                         </a>
                       ) : (
-                        <p className="text-sm text-[#3D3D3D] leading-relaxed">{value}</p>
+                        <p className="text-sm text-[#1F2937] leading-relaxed">{value}</p>
                       )}
                     </div>
                   </div>
@@ -142,31 +185,31 @@ const ContactPage: React.FC = () => {
               </div>
 
               {/* Business Hours */}
-              <div className="p-5 bg-white rounded-sm border border-[#F5ECD5]">
-                <h4 className="font-semibold text-[#3D3D3D] text-sm mb-3">Business Hours</h4>
+              <div className="p-5 bg-white rounded-sm border border-[#E5E7EB]">
+                <h4 className="font-semibold text-[#1F2937] text-sm mb-3">Business Hours</h4>
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#7a7a7a]">Monday – Friday</span>
-                    <span className="text-[#3D3D3D] font-medium">9:00 AM – 6:00 PM</span>
+                    <span className="text-[#6B7280]">Monday – Friday</span>
+                    <span className="text-[#1F2937] font-medium">9:00 AM – 6:00 PM</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#7a7a7a]">Saturday</span>
-                    <span className="text-[#3D3D3D] font-medium">10:00 AM – 2:00 PM</span>
+                    <span className="text-[#6B7280]">Saturday</span>
+                    <span className="text-[#1F2937] font-medium">10:00 AM – 2:00 PM</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#7a7a7a]">Sunday</span>
-                    <span className="text-[#8a8a8a]">Closed</span>
+                    <span className="text-[#6B7280]">Sunday</span>
+                    <span className="text-[#6B7280]">Closed</span>
                   </div>
                 </div>
               </div>
 
               {/* Response SLA */}
-              <div className="mt-4 p-4 bg-[#578E7E]/10 rounded-sm border border-[#578E7E]/20">
+              <div className="mt-4 p-4 bg-[#1557B0]/10 rounded-sm border border-[#1557B0]/20">
                 <div className="flex gap-3 items-start">
-                  <CheckCircle2 size={16} className="text-[#578E7E] flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-[#5a5a5a] leading-relaxed">
+                  <CheckCircle2 size={16} className="text-[#1557B0] flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#4B5563] leading-relaxed">
                     We commit to responding to all procurement enquiries within{' '}
-                    <strong className="text-[#578E7E]">4 business hours</strong>. For urgent requirements,
+                    <strong className="text-[#1557B0]">4 business hours</strong>. For urgent requirements,
                     call us directly.
                   </p>
                 </div>
@@ -175,19 +218,19 @@ const ContactPage: React.FC = () => {
 
             {/* Form — right */}
             <div className="lg:col-span-3">
-              <div className="bg-white rounded-sm border border-[#F5ECD5] p-7 md:p-9 shadow-sm">
+              <div className="bg-white rounded-sm border border-[#E5E7EB] p-7 md:p-9 shadow-xs">
                 {submitted ? (
                   <div className="text-center py-10">
-                    <div className="w-16 h-16 rounded-full bg-[#578E7E]/10 flex items-center justify-center mx-auto mb-5">
-                      <CheckCircle2 size={32} className="text-[#578E7E]" />
+                    <div className="w-16 h-16 rounded-full bg-[#1557B0]/10 flex items-center justify-center mx-auto mb-5">
+                      <CheckCircle2 size={32} className="text-[#1557B0]" />
                     </div>
                     <h3
-                      className="text-2xl font-bold text-[#3D3D3D] mb-3 font-serif"
+                      className="text-2xl font-bold text-[#1F2937] mb-3 font-serif"
                       style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
                     >
                       Enquiry Received!
                     </h3>
-                    <p className="text-[#5a5a5a] text-sm max-w-sm mx-auto mb-6">
+                    <p className="text-[#4B5563] text-sm max-w-sm mx-auto mb-6">
                       Thank you for reaching out. Our procurement team will review your requirements
                       and respond within 4 business hours with a tailored proposal.
                     </p>
@@ -259,7 +302,7 @@ const ContactPage: React.FC = () => {
                     )}
 
                     <div className="flex items-center justify-between pt-2">
-                      <p className="text-xs text-[#8a8a8a]">
+                      <p className="text-xs text-[#6B7280]">
                         Your data is secure and never shared with third parties.
                       </p>
                       <Button
@@ -267,7 +310,7 @@ const ContactPage: React.FC = () => {
                         variant="primary"
                         size="md"
                         loading={submitting}
-                        className="gap-2"
+                        className="gap-2 bg-[#1557B0] hover:bg-[#0F448C] text-white"
                       >
                         <Send size={14} />
                         Send Enquiry

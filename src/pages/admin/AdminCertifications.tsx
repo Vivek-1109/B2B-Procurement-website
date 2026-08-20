@@ -76,6 +76,7 @@ const AdminCertifications: React.FC = () => {
             setErrors({});
             setShowModal(true);
           }}
+          className="bg-[#1557B0] hover:bg-[#0B2A4A] text-white"
         >
           <Plus size={14} /> Add Certification
         </Button>
@@ -83,10 +84,10 @@ const AdminCertifications: React.FC = () => {
 
       {loading ? (
         <div className="p-8 text-center">
-          <div className="w-6 h-6 border-2 border-[#578E7E] border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-6 h-6 border-2 border-[#1557B0] border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
       ) : certs.length === 0 ? (
-        <div className="p-16 text-center text-[#8a8a8a]">
+        <div className="p-16 text-center text-[#6B7280]">
           <Award size={36} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">No certifications added yet</p>
         </div>
@@ -95,9 +96,9 @@ const AdminCertifications: React.FC = () => {
           {certs.map(cert => (
             <div
               key={cert.id}
-              className="bg-white rounded-sm border border-[#e0d8c8] p-5 hover:shadow-md transition-all group"
+              className="bg-white rounded-sm border border-[#E5E7EB] p-5 hover:shadow-md transition-all group"
             >
-              <div className="w-12 h-12 rounded-sm bg-[#578E7E]/10 flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-sm bg-[#1557B0]/10 flex items-center justify-center mb-4">
                 {cert.imageUrl ? (
                   <img
                     src={cert.imageUrl}
@@ -105,15 +106,15 @@ const AdminCertifications: React.FC = () => {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <Award size={20} className="text-[#578E7E]" />
+                  <Award size={20} className="text-[#1557B0]" />
                 )}
               </div>
-              <h3 className="font-semibold text-[#3D3D3D] text-sm mb-1">{cert.title}</h3>
-              {cert.issuer && <p className="text-xs text-[#8a8a8a]">{cert.issuer}</p>}
+              <h3 className="font-semibold text-[#1F2937] text-sm mb-1">{cert.title}</h3>
+              {cert.issuer && <p className="text-xs text-[#6B7280]">{cert.issuer}</p>}
               {cert.year && (
-                <p className="text-xs text-[#578E7E] font-medium mt-1">{cert.year}</p>
+                <p className="text-xs text-[#1557B0] font-medium mt-1">{cert.year}</p>
               )}
-              <div className="mt-4 pt-3 border-t border-[#F5ECD5]">
+              <div className="mt-4 pt-3 border-t border-[#E5E7EB]">
                 <button
                   onClick={() => setConfirmDelete(cert.id)}
                   className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-sm bg-red-50 text-red-500 border border-red-100 hover:border-red-300 transition-all"
@@ -130,11 +131,11 @@ const AdminCertifications: React.FC = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-sm shadow-2xl w-full max-w-md">
-            <div className="px-6 py-4 border-b border-[#e0d8c8] flex items-center justify-between">
-              <h2 className="font-bold text-[#3D3D3D]">Add Certification</h2>
+            <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
+              <h2 className="font-bold text-[#1F2937]">Add Certification</h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-sm hover:bg-[#F5ECD5] text-[#8a8a8a]"
+                className="p-1.5 rounded-sm hover:bg-[#F4F8FC] text-[#6B7280]"
               >
                 <X size={16} />
               </button>
@@ -167,11 +168,11 @@ const AdminCertifications: React.FC = () => {
                 placeholder="https://..."
               />
             </div>
-            <div className="px-6 py-4 border-t border-[#e0d8c8] flex gap-3 justify-end">
+            <div className="px-6 py-4 border-t border-[#E5E7EB] flex gap-3 justify-end">
               <Button variant="ghost" size="sm" onClick={() => setShowModal(false)}>
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" loading={saving} onClick={handleSave}>
+              <Button variant="primary" size="sm" loading={saving} onClick={handleSave} className="bg-[#1557B0] hover:bg-[#0B2A4A] text-white">
                 Save Certification
               </Button>
             </div>
@@ -183,8 +184,8 @@ const AdminCertifications: React.FC = () => {
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-sm shadow-2xl p-6 max-w-sm w-full">
-            <h3 className="font-bold text-[#3D3D3D] mb-2">Delete Certification?</h3>
-            <p className="text-sm text-[#7a7a7a] mb-5">
+            <h3 className="font-bold text-[#1F2937] mb-2">Delete Certification?</h3>
+            <p className="text-sm text-[#6B7280] mb-5">
               This will permanently remove this certification.
             </p>
             <div className="flex gap-3 justify-end">

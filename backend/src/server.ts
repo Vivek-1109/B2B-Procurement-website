@@ -15,11 +15,13 @@ import authRoutes from "./routes/auth";
 import productRoutes from "./routes/products";
 import leadRoutes from "./routes/leads";
 import contactRoutes from "./routes/contact";
+import resendWebhookRoutes from "./routes/resendWebhook";
 import certificationRoutes from "./routes/certifications";
 import categoryRoutes from './routes/categories';
 import clientRoutes from './routes/clients';
 
 const app = express();
+app.set("trust proxy", 1);
 
 // ──────────────────────────────────────────────
 // Security middleware
@@ -75,7 +77,16 @@ app.use(
 // Parsing & compression middleware
 // ──────────────────────────────────────────────
 app.use(compression());
-app.use(express.json({ limit: "10kb" }));
+app.use(
+  express.json({
+    limit: "10kb",
+    verify: (req, _res, buf) => {
+      if (req.url?.startsWith("/api/email/webhooks/resend")) {
+        (req as Request & { rawBody?: Buffer }).rawBody = Buffer.from(buf);
+      }
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
 
@@ -86,7 +97,10 @@ if (process.env.NODE_ENV === "production") {
   // Combined format for production log aggregation (Railway, Datadog, etc.)
   app.use(morgan("combined"));
 } else {
-  app.use(morgan("dev"));
+  // Skip logging search queries in dev console to prevent logging of typed search keys
+  app.use(morgan("dev", {
+    skip: (req) => req.url.includes('search=')
+  }));
 }
 
 // ──────────────────────────────────────────────
@@ -152,6 +166,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/leads", leadRoutes);
 
 app.use("/api/contact", contactRateLimit, contactRoutes);
+
+app.use("/api/email/webhooks/resend", resendWebhookRoutes);
 
 app.use("/api/certifications", certificationRoutes);
 

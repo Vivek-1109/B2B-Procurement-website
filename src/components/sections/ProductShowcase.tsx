@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight, Tag } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 
 const ProductShowcase: React.FC = () => {
@@ -38,79 +38,84 @@ const ProductShowcase: React.FC = () => {
   }, []);
 
   return (
-    <section id="categories" ref={containerRef} className="pt-8 md:pt-12 pb-12 md:pb-16 bg-white overflow-hidden">
+    <section id="categories" ref={containerRef} className="pt-10 md:pt-14 pb-14 md:pb-18 bg-[#F4F8FC] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div className="text-left max-w-2xl">
-            <span className="inline-block text-xs font-semibold text-[#578E7E] uppercase tracking-[0.15em] mb-3">
+            <span className="inline-block text-xs font-semibold text-[#1557B0] uppercase tracking-[0.15em] mb-2">
               Product Catalogue
             </span>
-            <div className="w-8 h-0.5 bg-[#578E7E] mb-4" />
+            <div className="w-8 h-0.5 bg-[#1557B0] mb-3" />
             <h2
-              className="text-3xl sm:text-4xl font-bold text-[#3D3D3D] mb-4 font-serif"
+              className="text-3xl sm:text-4xl font-bold text-[#1F2937] mb-3 font-serif"
               style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
             >
               Browse by Category
             </h2>
-            <p className="text-[#5a5a5a] text-sm sm:text-base leading-relaxed">
-              Find products by industry category. Select a category below to explore our full technical inventory and request quotes.
+            <p className="text-[#4B5563] text-sm sm:text-base leading-relaxed">
+              Find products by industry category. Select any category to explore our technical inventory and request bulk quotes.
             </p>
           </div>
           
           <Link
             to="/products"
-            className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-[#578E7E] hover:text-[#3a6b5e] transition-colors group/cta whitespace-nowrap md:mb-1"
+            className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1557B0] hover:text-[#0B2A4A] transition-colors group/cta whitespace-nowrap md:mb-1"
           >
             Explore All Products
             <ArrowRight size={14} className="group-hover/cta:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        {/* Category Cards Grid */}
+        {/* Category Cards Grid — Crisp Modern White Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categoryCards.map((cat, idx) => (
             <Link
               key={cat.name}
               to={`/products?category=${encodeURIComponent(cat.name)}`}
-              className={`group relative h-72 rounded-xl overflow-hidden shadow-sm border border-[#F5ECD5] flex flex-col justify-end p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 ${
-                inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              className={`group bg-white rounded-xl overflow-hidden border border-[#E5E7EB] shadow-2xs hover:shadow-xl hover:border-[#1557B0]/40 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between ${
+                inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
               }`}
-              style={{ transitionDelay: `${idx * 60}ms` }}
+              style={{ transitionDelay: `${idx * 40}ms` }}
             >
-              {/* Image background with overlay */}
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1.5s]"
-                />
-                <div 
-                  className="absolute inset-0 z-10 transition-colors duration-300"
-                  style={{
-                    background: 'linear-gradient(to top, rgba(61, 61, 61, 0.95) 0%, rgba(61, 61, 61, 0.6) 50%, rgba(61, 61, 61, 0.2) 100%)'
-                  }}
-                />
+              {/* Crisp, natural image frame without murky color overlays */}
+              <div className="relative h-44 w-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter contrast-102"
+                  />
+                ) : (
+                  <Tag size={36} className="text-slate-300" />
+                )}
+                
+                {/* Product Count Pill */}
+                <div className="absolute top-3 right-3 bg-white/95 text-[#1557B0] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-2xs border border-slate-200 backdrop-blur-xs">
+                  {cat.count}
+                </div>
               </div>
 
-              {/* Text content overlay */}
-              <div className="relative z-20 text-[#FFFAEC]">
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-[#a8d5c8] bg-white/10 px-2.5 py-1 rounded-full border border-white/10 backdrop-blur-sm inline-block mb-3">
-                  {cat.count}
-                </span>
-                <h3 
-                  className="text-base font-bold mb-1.5 font-serif group-hover:text-[#a8d5c8] transition-colors"
-                  style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
-                >
-                  {cat.name}
-                </h3>
-                <p className="text-[10px] text-white/75 leading-relaxed mb-3 font-normal line-clamp-2">
-                  {cat.desc}
-                </p>
-                <div className="flex items-center gap-1 text-xs font-semibold text-[#a8d5c8] group-hover:text-white transition-colors">
-                  View Catalogue <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              {/* Card Body */}
+              <div className="p-5 flex flex-col flex-1 justify-between bg-white border-t border-[#E5E7EB]">
+                <div>
+                  <h3
+                    className="text-base sm:text-lg font-bold text-[#1F2937] group-hover:text-[#1557B0] transition-colors leading-snug mb-1.5 font-serif"
+                    style={{ fontFamily: 'Playfair Display, Georgia, serif' }}
+                  >
+                    {cat.name}
+                  </h3>
+                  <p className="text-xs text-[#6B7280] leading-relaxed line-clamp-2 mb-4 font-normal">
+                    {cat.desc}
+                  </p>
+                </div>
+
+                {/* Footer Action */}
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs font-semibold text-[#1557B0] group-hover:text-[#0B2A4A] transition-colors">
+                  <span>View Catalogue</span>
+                  <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform text-[#1557B0]" />
                 </div>
               </div>
             </Link>

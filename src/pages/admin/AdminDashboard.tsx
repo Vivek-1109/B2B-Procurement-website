@@ -90,14 +90,14 @@ const AdminDashboard: React.FC = () => {
           <Link
             key={label}
             to={href}
-            className="bg-white rounded-sm border border-[#e0d8c8] p-5 flex items-center gap-4 hover:shadow-md hover:border-[#578E7E]/30 transition-all"
+            className="bg-white rounded-sm border border-[#E5E7EB] p-5 flex items-center gap-4 hover:shadow-md hover:border-[#1557B0]/30 transition-all"
           >
             <div className={`w-11 h-11 rounded-sm flex items-center justify-center ${color}`}>
               <Icon size={20} />
             </div>
             <div>
-              <div className="text-2xl font-bold text-[#3D3D3D]">{value}</div>
-              <div className="text-xs text-[#8a8a8a]">{label}</div>
+              <div className="text-2xl font-bold text-[#1F2937]">{value}</div>
+              <div className="text-xs text-[#6B7280]">{label}</div>
             </div>
           </Link>
         ))}
@@ -105,18 +105,18 @@ const AdminDashboard: React.FC = () => {
 
       {/* Lead status breakdown */}
       <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-sm border border-[#e0d8c8] p-5">
+        <div className="bg-white rounded-sm border border-[#E5E7EB] p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-[#3D3D3D]">Lead Pipeline</span>
-            <TrendingUp size={16} className="text-[#578E7E]" />
+            <span className="text-sm font-semibold text-[#1F2937]">Lead Pipeline</span>
+            <TrendingUp size={16} className="text-[#1557B0]" />
           </div>
           <div className="space-y-3">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-[#7a7a7a]">New</span>
-                <span className="font-medium text-[#3D3D3D]">{newLeads.length}</span>
+                <span className="text-[#6B7280]">New</span>
+                <span className="font-medium text-[#1F2937]">{newLeads.length}</span>
               </div>
-              <div className="h-1.5 bg-[#F5ECD5] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-500 rounded-full"
                   style={{ width: `${leads.length ? (newLeads.length / leads.length) * 100 : 0}%` }}
@@ -125,10 +125,10 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-[#7a7a7a]">Contacted</span>
-                <span className="font-medium text-[#3D3D3D]">{contactedLeads.length}</span>
+                <span className="text-[#6B7280]">Contacted</span>
+                <span className="font-medium text-[#1F2937]">{contactedLeads.length}</span>
               </div>
-              <div className="h-1.5 bg-[#F5ECD5] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-amber-400 rounded-full"
                   style={{ width: `${leads.length ? (contactedLeads.length / leads.length) * 100 : 0}%` }}
@@ -137,10 +137,10 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-[#7a7a7a]">Closed</span>
-                <span className="font-medium text-[#3D3D3D]">{closedLeads.length}</span>
+                <span className="text-[#6B7280]">Closed</span>
+                <span className="font-medium text-[#1F2937]">{closedLeads.length}</span>
               </div>
-              <div className="h-1.5 bg-[#F5ECD5] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-500 rounded-full"
                   style={{ width: `${leads.length ? (closedLeads.length / leads.length) * 100 : 0}%` }}
@@ -150,50 +150,50 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="md:col-span-2 bg-white rounded-sm border border-[#e0d8c8] p-5">
-          <h3 className="text-sm font-semibold text-[#3D3D3D] mb-4">Quick Actions</h3>
+        <div className="md:col-span-2 bg-white rounded-sm border border-[#E5E7EB] p-5">
+          <h3 className="text-sm font-semibold text-[#1F2937] mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-3">
             <Link
               to="/admin/products"
-              className="flex items-center gap-3 p-3 bg-[#FFFAEC] rounded-sm border border-[#F5ECD5] hover:border-[#578E7E]/30 hover:shadow-sm transition-all text-sm font-medium text-[#3D3D3D]"
+              className="flex items-center gap-3 p-3 bg-[#F4F8FC] rounded-sm border border-[#E5E7EB] hover:border-[#1557B0]/30 hover:shadow-xs transition-all text-sm font-medium text-[#1F2937]"
             >
-              <Package size={16} className="text-[#578E7E]" />
+              <Package size={16} className="text-[#1557B0]" />
               Add Product
             </Link>
             <Link
               to="/admin/leads"
-              className="flex items-center gap-3 p-3 bg-[#FFFAEC] rounded-sm border border-[#F5ECD5] hover:border-[#578E7E]/30 hover:shadow-sm transition-all text-sm font-medium text-[#3D3D3D]"
+              className="flex items-center gap-3 p-3 bg-[#F4F8FC] rounded-sm border border-[#E5E7EB] hover:border-[#1557B0]/30 hover:shadow-xs transition-all text-sm font-medium text-[#1F2937]"
             >
-              <Mail size={16} className="text-[#578E7E]" />
+              <Mail size={16} className="text-[#1557B0]" />
               View Leads
             </Link>
             <Link
               to="/admin/certifications"
-              className="flex items-center gap-3 p-3 bg-[#FFFAEC] rounded-sm border border-[#F5ECD5] hover:border-[#578E7E]/30 hover:shadow-sm transition-all text-sm font-medium text-[#3D3D3D]"
+              className="flex items-center gap-3 p-3 bg-[#F4F8FC] rounded-sm border border-[#E5E7EB] hover:border-[#1557B0]/30 hover:shadow-xs transition-all text-sm font-medium text-[#1F2937]"
             >
-              <Award size={16} className="text-[#578E7E]" />
+              <Award size={16} className="text-[#1557B0]" />
               Manage Certs
             </Link>
             <Link
               to="/admin/categories"
-              className="flex items-center gap-3 p-3 bg-[#FFFAEC] rounded-sm border border-[#F5ECD5] hover:border-[#578E7E]/30 hover:shadow-sm transition-all text-sm font-medium text-[#3D3D3D]"
+              className="flex items-center gap-3 p-3 bg-[#F4F8FC] rounded-sm border border-[#E5E7EB] hover:border-[#1557B0]/30 hover:shadow-xs transition-all text-sm font-medium text-[#1F2937]"
             >
-              <Layers size={16} className="text-[#578E7E]" />
+              <Layers size={16} className="text-[#1557B0]" />
               Manage Categories
             </Link>
             <Link
               to="/admin/clients"
-              className="flex items-center gap-3 p-3 bg-[#FFFAEC] rounded-sm border border-[#F5ECD5] hover:border-[#578E7E]/30 hover:shadow-sm transition-all text-sm font-medium text-[#3D3D3D]"
+              className="flex items-center gap-3 p-3 bg-[#F4F8FC] rounded-sm border border-[#E5E7EB] hover:border-[#1557B0]/30 hover:shadow-xs transition-all text-sm font-medium text-[#1F2937]"
             >
-              <Handshake size={16} className="text-[#578E7E]" />
+              <Handshake size={16} className="text-[#1557B0]" />
               Manage Clients
             </Link>
             <a
               href="/"
               target="_blank"
-              className="flex items-center gap-3 p-3 bg-[#FFFAEC] rounded-sm border border-[#F5ECD5] hover:border-[#578E7E]/30 hover:shadow-sm transition-all text-sm font-medium text-[#3D3D3D]"
+              className="flex items-center gap-3 p-3 bg-[#F4F8FC] rounded-sm border border-[#E5E7EB] hover:border-[#1557B0]/30 hover:shadow-xs transition-all text-sm font-medium text-[#1F2937]"
             >
-              <TrendingUp size={16} className="text-[#578E7E]" />
+              <TrendingUp size={16} className="text-[#1557B0]" />
               View Website
             </a>
           </div>
@@ -201,36 +201,36 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Recent leads table */}
-      <div className="bg-white rounded-sm border border-[#e0d8c8]">
-        <div className="px-5 py-4 border-b border-[#e0d8c8] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#3D3D3D]">Recent Enquiries</h3>
-          <Link to="/admin/leads" className="text-xs text-[#578E7E] hover:underline font-medium">
+      <div className="bg-white rounded-sm border border-[#E5E7EB]">
+        <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-[#1F2937]">Recent Enquiries</h3>
+          <Link to="/admin/leads" className="text-xs text-[#1557B0] hover:underline font-medium">
             View all →
           </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-[#FFFAEC] border-b border-[#e0d8c8]">
+              <tr className="bg-[#F4F8FC] border-b border-[#E5E7EB]">
                 {['Name', 'Company', 'Email', 'Date', 'Status'].map(h => (
                   <th
                     key={h}
-                    className="text-left px-4 py-3 text-xs font-semibold text-[#7a7a7a] uppercase tracking-wider"
+                    className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] uppercase tracking-wider"
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F5ECD5]">
+            <tbody className="divide-y divide-[#E5E7EB]">
               {recentLeads.map(lead => {
                 const status = statusConfig[lead.status];
                 return (
-                  <tr key={lead.id} className="hover:bg-[#FFFAEC] transition-colors">
-                    <td className="px-4 py-3 font-medium text-[#3D3D3D]">{lead.name}</td>
-                    <td className="px-4 py-3 text-[#5a5a5a]">{lead.company}</td>
-                    <td className="px-4 py-3 text-[#7a7a7a]">{lead.email}</td>
-                    <td className="px-4 py-3 text-[#7a7a7a] whitespace-nowrap">
+                  <tr key={lead.id} className="hover:bg-[#F4F8FC] transition-colors">
+                    <td className="px-4 py-3 font-medium text-[#1F2937]">{lead.name}</td>
+                    <td className="px-4 py-3 text-[#4B5563]">{lead.company}</td>
+                    <td className="px-4 py-3 text-[#6B7280]">{lead.email}</td>
+                    <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">
                       {new Date(lead.createdAt).toLocaleDateString('en-IN', {
                         day: 'numeric',
                         month: 'short',
@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
               })}
               {recentLeads.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#8a8a8a]">
+                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-[#6B7280]">
                     No enquiries yet
                   </td>
                 </tr>
