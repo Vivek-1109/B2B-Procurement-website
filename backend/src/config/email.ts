@@ -96,7 +96,7 @@ function formatDate(date: Date | string | undefined): string {
 }
 
 function leadId(lead: ILead): string {
-  return lead.id || String(lead._id);
+  return lead.id;
 }
 
 function renderLogo(): string {

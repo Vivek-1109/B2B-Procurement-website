@@ -1,4 +1,4 @@
-import { apiRequest } from './client';
+import { apiRequest, API_BASE, getValidToken } from './client';
 import type { Product } from '../types';
 
 export interface ApiProduct {
@@ -49,7 +49,6 @@ export async function deleteProduct(id: string): Promise<void> {
 export async function uploadProductImage(id: string, file: File): Promise<Product> {
   const formData = new FormData();
   formData.append('image', file);
-  const { API_BASE, getValidToken } = await import('./client');
   const token = await getValidToken();
   const res = await fetch(`${API_BASE}/api/products/${id}/image`, {
     method: 'POST',

@@ -1,11 +1,8 @@
 import 'dotenv/config';
-import mongoose from 'mongoose';
 import connectDB from './config/db';
-import Admin from './models/Admin';
-import Product from './models/Product';
-import Certification from './models/Certification';
-import Category from './models/Category';
-import Client from './models/Client';
+import { getPool } from './config/db';
+import { createAdmin } from './models/Admin';
+
 
 const categories = [
   {
@@ -348,39 +345,72 @@ const certifications = [
 ];
 
 const seed = async (): Promise<void> => {
-  console.log('🌱 Syncing Cloudinary assets with MongoDB...');
+  console.log('🌱 Syncing Cloudinary assets with PostgreSQL (Neon)...');
   await connectDB();
 
+  const pool = getPool();
+
+  // ── Admin ───────────────────────────────────────────────────
   const adminEmail = process.env.INITIAL_ADMIN_EMAIL || 'admin@prosource.com';
   const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'admin123';
 
-  const existingAdmin = await Admin.findOne({ email: adminEmail });
-  if (!existingAdmin) {
-    await Admin.create({
-      email: adminEmail,
-      passwordHash: adminPassword,
-      role: 'super_admin',
-    });
+  const { rows: existingAdmins } = await pool.query(
+    'SELECT id FROM admins WHERE email = $1 LIMIT 1',
+    [adminEmail.toLowerCase().trim()]
+  );
+
+  if (existingAdmins.length === 0) {
+    await createAdmin({ email: adminEmail, plainPassword: adminPassword, role: 'super_admin' });
     console.log(`✅ Created admin: ${adminEmail}`);
+  } else {
+    console.log(`ℹ️  Admin already exists: ${adminEmail}`);
   }
 
-  await Product.deleteMany({});
-  await Product.insertMany(products);
+  // ── Products ────────────────────────────────────────────────
+  await pool.query('DELETE FROM products');
+  for (const p of products) {
+    await pool.query(
+      `INSERT INTO products (name, category, description, image_url, cloudinary_public_id)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [(p as any).name, (p as any).category, (p as any).description, (p as any).imageUrl || '', (p as any).cloudinaryPublicId || '']
+    );
+  }
   console.log(`✅ Seeded ${products.length} products with Cloudinary URLs`);
 
-  await Category.deleteMany({});
-  await Category.insertMany(categories);
+  // ── Categories ──────────────────────────────────────────────
+  await pool.query('DELETE FROM categories');
+  for (const c of categories) {
+    await pool.query(
+      `INSERT INTO categories (name, description, image_url, cloudinary_public_id, "order")
+       VALUES ($1, $2, $3, $4, $5)`,
+      [(c as any).name, (c as any).description, (c as any).imageUrl || '', (c as any).cloudinaryPublicId || '', (c as any).order ?? 0]
+    );
+  }
   console.log(`✅ Seeded ${categories.length} categories with Cloudinary URLs`);
 
-  await Certification.deleteMany({});
-  await Certification.insertMany(certifications);
+  // ── Certifications ──────────────────────────────────────────
+  await pool.query('DELETE FROM certifications');
+  for (const cert of certifications) {
+    await pool.query(
+      `INSERT INTO certifications (title, image_url, issuer, year, "order")
+       VALUES ($1, $2, $3, $4, $5)`,
+      [cert.title, cert.imageUrl || '', cert.issuer || '', cert.year || '', cert.order ?? 0]
+    );
+  }
   console.log(`✅ Seeded ${certifications.length} certifications`);
 
-  await Client.deleteMany({});
-  await Client.insertMany(clients);
+  // ── Clients ─────────────────────────────────────────────────
+  await pool.query('DELETE FROM clients');
+  for (const cl of clients) {
+    await pool.query(
+      `INSERT INTO clients (name, logo_url, cloudinary_public_id, "order")
+       VALUES ($1, $2, $3, $4)`,
+      [(cl as any).name, (cl as any).logoUrl || '', (cl as any).cloudinaryPublicId || '', (cl as any).order ?? 0]
+    );
+  }
   console.log(`✅ Seeded ${clients.length} partners with Cloudinary logos`);
 
-  await mongoose.disconnect();
+  await pool.end();
   console.log('✅ Database sync complete.');
 };
 
@@ -388,3 +418,4 @@ seed().catch(err => {
   console.error('❌ Seed failed:', err);
   process.exit(1);
 });
+

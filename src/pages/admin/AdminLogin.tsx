@@ -7,8 +7,7 @@ import Button from '../../components/ui/Button';
 const AdminLogin: React.FC = () => {
   const { login } = useAdmin();
   const navigate = useNavigate();
-  const envEmail = import.meta.env.VITE_ADMIN_EMAIL || 'admin@prosource.com';
-  const [email, setEmail] = useState(envEmail);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');

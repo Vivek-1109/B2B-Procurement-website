@@ -5,7 +5,6 @@ import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 
 import connectDB from "./config/db";
@@ -26,6 +25,14 @@ app.set("trust proxy", 1);
 // ──────────────────────────────────────────────
 // Security middleware
 // ──────────────────────────────────────────────
+// Parse allowed origins — automatically switches based on NODE_ENV
+const isProd = process.env.NODE_ENV === "production";
+const defaultOrigin = isProd
+  ? "https://b2b.vivek-jha.me,https://aprsvs.com"
+  : "http://localhost:5173";
+const rawOrigin = process.env.ALLOWED_ORIGIN || defaultOrigin;
+const allowedOrigins = rawOrigin.split(",").map((o) => o.trim()).filter(Boolean);
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -40,11 +47,7 @@ app.use(
           "https://res.cloudinary.com",
           "https://images.unsplash.com",
         ],
-        connectSrc: [
-          "'self'",
-          "https://b2b-procurement-website-production.up.railway.app",
-          "https://b2-b-procurement-website.vercel.app",
-        ],
+        connectSrc: ["'self'", ...allowedOrigins],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests:
@@ -54,10 +57,6 @@ app.use(
     crossOriginEmbedderPolicy: false, // Cloudinary images need this off
   }),
 );
-
-// Parse allowed origins — supports comma-separated list for multiple Vercel previews
-const rawOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:5173";
-const allowedOrigins = rawOrigin.split(",").map((o) => o.trim());
 
 app.use(
   cors({
@@ -103,10 +102,6 @@ if (process.env.NODE_ENV === "production") {
   }));
 }
 
-// ──────────────────────────────────────────────
-// NoSQL injection sanitization
-// ──────────────────────────────────────────────
-app.use(mongoSanitize());
 
 // ──────────────────────────────────────────────
 // Rate limiting

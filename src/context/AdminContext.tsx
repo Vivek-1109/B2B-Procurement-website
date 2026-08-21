@@ -133,9 +133,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [refreshProducts, refreshCertifications, refreshCategories, refreshClients]);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'admin@prosource.com').trim().toLowerCase();
-    const envAdminPassword = (import.meta.env.VITE_ADMIN_PASSWORD || 'admin123').trim();
-
     try {
       const response = await loginApi(email, password);
       const user: AdminUser = {
@@ -150,24 +147,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       );
       return true;
     } catch (apiErr) {
-      console.warn('Backend login API unavailable or returned error, checking env credentials:', apiErr);
-      // Resilient fallback authentication from environment variables
-      if (
-        email.trim().toLowerCase() === envAdminEmail &&
-        password.trim() === envAdminPassword
-      ) {
-        const user: AdminUser = {
-          email: email.trim().toLowerCase(),
-          role: 'super_admin',
-          token: 'env-session-token-' + Date.now(),
-        };
-        setAdmin(user);
-        localStorage.setItem(
-          'admin_user',
-          JSON.stringify({ email: user.email, role: user.role, token: user.token })
-        );
-        return true;
-      }
+      console.error('Login failed:', apiErr);
       return false;
     }
   }, []);

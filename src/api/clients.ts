@@ -1,4 +1,4 @@
-import { apiRequest } from './client';
+import { apiRequest, API_BASE, getValidToken } from './client';
 import type { Client } from '../types';
 
 export interface ApiClient {
@@ -64,7 +64,6 @@ export async function deleteClient(id: string): Promise<void> {
 export async function uploadClientLogo(id: string, file: File): Promise<Client> {
   const formData = new FormData();
   formData.append('image', file);
-  const { API_BASE, getValidToken } = await import('./client');
   const token = await getValidToken();
   const res = await fetch(`${API_BASE}/api/clients/${id}/logo`, {
     method: 'POST',
