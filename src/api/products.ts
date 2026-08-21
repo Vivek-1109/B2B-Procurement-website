@@ -2,7 +2,8 @@ import { apiRequest, API_BASE, getValidToken } from './client';
 import type { Product } from '../types';
 
 export interface ApiProduct {
-  _id: string;
+  id?: string;
+  _id?: string;
   name: string;
   category: string;
   description: string;
@@ -12,12 +13,12 @@ export interface ApiProduct {
 
 function toProduct(p: ApiProduct): Product {
   return {
-    id: p._id,
+    id: p.id || p._id || '',
     name: p.name,
     category: p.category,
     description: p.description,
     imageUrl: p.imageUrl,
-    createdAt: new Date(p.createdAt).toISOString().split('T')[0],
+    createdAt: p.createdAt ? new Date(p.createdAt).toISOString().split('T')[0] : '',
   };
 }
 
@@ -62,7 +63,7 @@ export async function uploadProductImage(id: string, file: File): Promise<Produc
   }
   const data: ApiProduct = await res.json();
   return {
-    id: data._id,
+    id: data.id || data._id || '',
     name: data.name,
     category: data.category,
     description: data.description,

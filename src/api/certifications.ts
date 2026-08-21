@@ -2,7 +2,8 @@ import { apiRequest } from './client';
 import type { Certification } from '../types';
 
 export interface ApiCertification {
-  _id: string;
+  id?: string;
+  _id?: string;
   title: string;
   imageUrl: string;
   issuer: string;
@@ -11,7 +12,14 @@ export interface ApiCertification {
 }
 
 function toCert(c: ApiCertification): Certification {
-  return { id: c._id, title: c.title, imageUrl: c.imageUrl, issuer: c.issuer, year: c.year };
+  return {
+    id: c.id || c._id || '',
+    title: c.title,
+    imageUrl: c.imageUrl,
+    issuer: c.issuer,
+    year: c.year,
+    order: c.order,
+  };
 }
 
 export async function fetchCertifications(): Promise<Certification[]> {

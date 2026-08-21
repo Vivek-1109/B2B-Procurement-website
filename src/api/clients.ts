@@ -2,7 +2,8 @@ import { apiRequest, API_BASE, getValidToken } from './client';
 import type { Client } from '../types';
 
 export interface ApiClient {
-  _id: string;
+  id?: string;
+  _id?: string;
   name: string;
   logoUrl: string;
   cloudinaryPublicId?: string;
@@ -14,7 +15,7 @@ export interface ApiClient {
 
 function toClient(c: ApiClient): Client {
   return {
-    id: c._id,
+    id: c.id || c._id || '',
     name: c.name,
     logoUrl: c.logoUrl,
     cloudinaryPublicId: c.cloudinaryPublicId,

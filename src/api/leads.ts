@@ -2,7 +2,8 @@ import { apiRequest } from './client';
 import type { ContactLead } from '../types';
 
 export interface ApiLead {
-  _id: string;
+  id?: string;
+  _id?: string;
   name: string;
   company: string;
   email: string;
@@ -19,7 +20,7 @@ export interface LeadsPaginatedResponse {
 
 function toLead(l: ApiLead): ContactLead {
   return {
-    id: l._id,
+    id: l.id || l._id || '',
     name: l.name,
     company: l.company,
     email: l.email,
