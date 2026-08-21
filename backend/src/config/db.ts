@@ -1,6 +1,5 @@
 import { Pool } from 'pg';
-import fs from 'fs';
-import path from 'path';
+import { SCHEMA_SQL } from '../db/schema';
 
 // ── Singleton pool ──────────────────────────────────────────
 let pool: Pool | null = null;
@@ -32,11 +31,9 @@ export function getPool(): Pool {
 
 // ── Schema initialisation ───────────────────────────────────
 export async function initSchema(): Promise<void> {
-  const schemaPath = path.join(__dirname, '..', 'db', 'schema.sql');
-  const sql = fs.readFileSync(schemaPath, 'utf8');
   const client = await getPool().connect();
   try {
-    await client.query(sql);
+    await client.query(SCHEMA_SQL);
     console.log('✅ PostgreSQL schema initialised');
   } finally {
     client.release();

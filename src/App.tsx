@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AdminProvider } from './context/AdminContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import { Analytics } from '@vercel/analytics/react';
 
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -168,6 +169,7 @@ export default function App() {
           </Routes>
         </Suspense>
       </Router>
+      <Analytics />
     </AdminProvider>
   );
 }
