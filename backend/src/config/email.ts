@@ -28,10 +28,14 @@ const COMPANY_PHONE = cleanEnv(process.env.COMPANY_PHONE) || '+91 99113 94456';
 const COMPANY_ADDRESS =
   cleanEnv(process.env.COMPANY_ADDRESS) ||
   'RZ-B3 243/D, Vijay Enclave, South West Delhi, New Delhi-110045';
-const LOGO_URL = cleanEnv(process.env.EMAIL_LOGO_URL);
-const BRAND_COLOR = sanitizeHexColor(process.env.EMAIL_BRAND_COLOR, '#578E7E');
-const DARK_COLOR = '#3D3D3D';
-const LIGHT_COLOR = '#FFFAEC';
+const BRAND_COLOR = sanitizeHexColor(process.env.EMAIL_BRAND_COLOR, '#1557B0');
+const BRAND_DARK = '#0B2A4A';
+const TEXT_DARK = '#1F2937';
+const TEXT_MUTED = '#6B7280';
+const BG_PAGE = '#F4F8FC';
+const BG_CARD = '#FFFFFF';
+const BG_SUBTLE = '#F8FAFD';
+const BORDER_COLOR = '#E5E7EB';
 const SEND_TIMEOUT_MS = parsePositiveInt(process.env.EMAIL_SEND_TIMEOUT_MS, 10000);
 const SEND_RETRIES = parsePositiveInt(process.env.EMAIL_SEND_RETRIES, 2);
 
@@ -99,17 +103,43 @@ function leadId(lead: ILead): string {
   return lead.id;
 }
 
+function getValidLogoUrl(): string | null {
+  const envLogo = cleanEnv(process.env.EMAIL_LOGO_URL);
+  // Email clients cannot display SVGs in <img> tags
+  if (envLogo && /^https:\/\//i.test(envLogo) && !envLogo.toLowerCase().endsWith('.svg')) {
+    return envLogo;
+  }
+  if (WEBSITE_URL && /^https:\/\//i.test(WEBSITE_URL)) {
+    return `${WEBSITE_URL.replace(/\/+$/, '')}/apr-logo.jpg`;
+  }
+  return null;
+}
+
 function renderLogo(): string {
-  if (LOGO_URL && /^https:\/\//i.test(LOGO_URL)) {
-    return `<img src="${escapeAttr(LOGO_URL)}" width="56" height="56" alt="${escapeAttr(
-      COMPANY_NAME,
-    )}" style="display:block;margin:0 auto 14px;border:0;max-width:56px;height:auto;">`;
+  const logoUrl = getValidLogoUrl();
+
+  if (logoUrl) {
+    return `
+      <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 16px auto;border-collapse:collapse;">
+        <tr>
+          <td align="center" style="background:#ffffff;padding:8px 16px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+            <img src="${escapeAttr(logoUrl)}" width="120" height="auto" alt="${escapeAttr(
+              COMPANY_NAME,
+            )}" style="display:block;max-height:42px;width:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
+          </td>
+        </tr>
+      </table>
+    `;
   }
 
   return `
-    <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:8px;background:rgba(255,255,255,0.16);color:#ffffff;line-height:56px;text-align:center;font-size:16px;font-weight:800;letter-spacing:0.4px;">
-      APR
-    </div>
+    <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 16px auto;border-collapse:collapse;">
+      <tr>
+        <td align="center" style="width:48px;height:48px;background:#ffffff;border-radius:10px;font-size:18px;font-weight:900;color:${BRAND_COLOR};letter-spacing:0.5px;text-align:center;vertical-align:middle;box-shadow:0 2px 8px rgba(0,0,0,0.12);">
+          APR
+        </td>
+      </tr>
+    </table>
   `;
 }
 
@@ -128,7 +158,7 @@ function renderSocialLinks(): string {
       ${links
         .map(
           ([label, url]) =>
-            `<a href="${escapeAttr(url)}" style="color:${BRAND_COLOR};text-decoration:none;margin:0 6px;">${escapeHtml(
+            `<a href="${escapeAttr(url)}" style="color:${BRAND_COLOR};font-weight:600;text-decoration:none;margin:0 8px;">${escapeHtml(
               label,
             )}</a>`,
         )
@@ -278,47 +308,84 @@ async function sendEmail(opts: {
 }
 
 function emailShell(title: string, preview: string, body: string): string {
-  return `
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="x-apple-disable-message-reformatting">
-        <title>${escapeHtml(title)}</title>
-        <style>
-          @media only screen and (max-width: 640px) {
-            .container { width: 100% !important; }
-            .content { padding: 28px 22px !important; }
-            .stack { display: block !important; width: 100% !important; }
-          }
-        </style>
-      </head>
-      <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;color:${DARK_COLOR};">
-        <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-          ${escapeHtml(preview)}
-        </div>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:32px 12px;">
-          <tr>
-            <td align="center">
-              <table role="presentation" class="container" width="640" cellpadding="0" cellspacing="0" style="width:640px;max-width:640px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e9e2cf;">
-                ${body}
-              </table>
-            </td>
-          </tr>
+  return `<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>${escapeHtml(title)}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    body, table, td, p, a, li, blockquote { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; width: 100% !important; background-color: ${BG_PAGE}; }
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; max-width: 100% !important; }
+      .content { padding: 26px 18px !important; }
+      .stack { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .btn-stack { display: block !important; width: 100% !important; margin-bottom: 10px !important; text-align: center !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:${BG_PAGE};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:${TEXT_DARK};">
+  <div style="display:none;font-size:1px;color:${BG_PAGE};line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+    ${escapeHtml(preview)}
+    &#847;&zwnj;&nbsp;&#8199;&shy;&#847;&zwnj;&nbsp;&#8199;&shy;&#847;&zwnj;&nbsp;&#8199;&shy;&#847;&zwnj;&nbsp;&#8199;&shy;&#847;&zwnj;&nbsp;&#8199;&shy;&#847;&zwnj;&nbsp;&#8199;&shy;
+  </div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${BG_PAGE};padding:32px 12px;">
+    <tr>
+      <td align="center">
+        <!--[if (gte mso 9)|(IE)]>
+        <table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="600">
+        <tr>
+        <td align="center" valign="top" width="600">
+        <![endif]-->
+        <table role="presentation" class="container" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:${BG_CARD};border-radius:12px;overflow:hidden;border:1px solid ${BORDER_COLOR};box-shadow:0 4px 18px rgba(11,42,74,0.06);">
+          ${body}
         </table>
-      </body>
-    </html>
-  `;
+        <!--[if (gte mso 9)|(IE)]>
+        </td>
+        </tr>
+        </table>
+        <![endif]-->
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
-function emailHeader(subtitle: string): string {
+function emailHeader(badgeText: string, subtitle?: string): string {
   return `
     <tr>
-      <td style="background:${DARK_COLOR};padding:34px 28px;text-align:center;">
+      <td style="background:${BRAND_DARK};padding:34px 28px 28px;text-align:center;border-bottom:3px solid ${BRAND_COLOR};">
         ${renderLogo()}
-        <h1 style="margin:0;color:#ffffff;font-size:24px;line-height:1.25;font-weight:700;">${escapeHtml(COMPANY_NAME)}</h1>
-        <p style="margin:8px 0 0;color:#d8eee8;font-size:13px;line-height:1.5;">${escapeHtml(subtitle)}</p>
+        <h1 style="margin:0;color:#ffffff;font-size:22px;line-height:1.3;font-weight:800;letter-spacing:-0.2px;">
+          ${escapeHtml(COMPANY_NAME)}
+        </h1>
+        <div style="margin:10px 0 0;">
+          <span style="display:inline-block;background:rgba(255,255,255,0.12);color:#EBF3FC;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;">
+            ${escapeHtml(badgeText)}
+          </span>
+        </div>
+        ${
+          subtitle
+            ? `<p style="margin:8px 0 0;color:#94A3B8;font-size:13px;line-height:1.5;">${escapeHtml(
+                subtitle,
+              )}</p>`
+            : ''
+        }
       </td>
     </tr>
   `;
@@ -327,91 +394,184 @@ function emailHeader(subtitle: string): string {
 function emailFooter(): string {
   return `
     <tr>
-      <td style="background:#f8f8f8;padding:22px 28px;border-top:1px solid #eeeeee;">
-        <p style="margin:0;text-align:center;color:#777777;font-size:12px;line-height:1.7;">
-          <strong>${escapeHtml(COMPANY_NAME)}</strong><br>
-          ${escapeHtml(COMPANY_ADDRESS)}<br>
-          <a href="${escapeAttr(WEBSITE_URL)}" style="color:${BRAND_COLOR};text-decoration:none;">${escapeHtml(
-            WEBSITE_URL,
-          )}</a> |
-          <a href="tel:${escapeAttr(COMPANY_PHONE.replace(/\s+/g, ''))}" style="color:${BRAND_COLOR};text-decoration:none;">${escapeHtml(
+      <td style="background:#F8FAFC;padding:26px 28px;border-top:1px solid ${BORDER_COLOR};text-align:center;">
+        <p style="margin:0 0 6px;color:${TEXT_DARK};font-size:13px;font-weight:700;">
+          ${escapeHtml(COMPANY_NAME)}
+        </p>
+        <p style="margin:0 0 10px;color:${TEXT_MUTED};font-size:12px;line-height:1.6;">
+          ${escapeHtml(COMPANY_ADDRESS)}
+        </p>
+        <p style="margin:0;color:${TEXT_MUTED};font-size:12px;line-height:1.6;">
+          <a href="${escapeAttr(WEBSITE_URL)}" style="color:${BRAND_COLOR};font-weight:600;text-decoration:none;">${escapeHtml(
+            WEBSITE_URL.replace(/^https?:\/\//, ''),
+          )}</a>
+          &nbsp;&bull;&nbsp;
+          <a href="tel:${escapeAttr(COMPANY_PHONE.replace(/\s+/g, ''))}" style="color:${BRAND_COLOR};font-weight:600;text-decoration:none;">${escapeHtml(
             COMPANY_PHONE,
           )}</a>
         </p>
         ${renderSocialLinks()}
+        <p style="margin:16px 0 0;color:#9CA3AF;font-size:11px;line-height:1.5;">
+          This is an automated communication regarding your procurement inquiry.
+        </p>
       </td>
     </tr>
   `;
 }
 
 export const sendContactConfirmation = async (lead: ILead): Promise<EmailSendResult> => {
-  const subject = `Thank you for contacting ${COMPANY_NAME}`;
+  const subject = `Thank you for contacting ${COMPANY_NAME} — Inquiry Received`;
   const safeName = escapeHtml(lead.name);
   const body = `
-    ${emailHeader('B2B procurement inquiry received')}
+    ${emailHeader('Inquiry Received', 'B2B Enterprise Sourcing & Procurement')}
     <tr>
-      <td class="content" style="padding:38px 44px;">
-        <h2 style="margin:0 0 14px;color:${DARK_COLOR};font-size:22px;line-height:1.3;">Thank you, ${safeName}</h2>
-        <p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.7;">
-          We have received your procurement inquiry. Our team will review your requirements and contact you within 1-2 business days.
+      <td class="content" style="padding:36px 38px;">
+        <h2 style="margin:0 0 12px;color:${TEXT_DARK};font-size:20px;line-height:1.35;font-weight:700;">
+          Dear ${safeName},
+        </h2>
+        <p style="margin:0 0 22px;color:#4B5563;font-size:15px;line-height:1.7;">
+          Thank you for reaching out to <strong>${escapeHtml(
+            COMPANY_NAME,
+          )}</strong>. We have successfully received your procurement inquiry. Our sourcing specialists are currently reviewing your requirements and will contact you within <strong>1–2 business days</strong>.
         </p>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${LIGHT_COLOR};border-left:4px solid ${BRAND_COLOR};border-radius:6px;margin:0 0 26px;">
+
+        <!-- Inquiry Summary Card -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BG_SUBTLE};border:1px solid #DCE9F9;border-left:4px solid ${BRAND_COLOR};border-radius:8px;margin:0 0 28px;overflow:hidden;">
           <tr>
-            <td style="padding:20px;">
-              <p style="margin:0 0 12px;color:${DARK_COLOR};font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">Your inquiry summary</p>
+            <td style="padding:20px 22px;">
+              <p style="margin:0 0 14px;color:${BRAND_DARK};font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;">
+                Your Inquiry Summary
+              </p>
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td class="stack" style="padding:5px 0;color:#777777;font-size:13px;width:120px;">Name</td>
-                  <td class="stack" style="padding:5px 0;color:${DARK_COLOR};font-size:13px;">${escapeHtml(lead.name)}</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_MUTED};font-size:13px;font-weight:600;width:130px;">Name</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_DARK};font-size:13px;font-weight:500;">${escapeHtml(
+                    lead.name,
+                  )}</td>
                 </tr>
                 <tr>
-                  <td class="stack" style="padding:5px 0;color:#777777;font-size:13px;width:120px;">Company</td>
-                  <td class="stack" style="padding:5px 0;color:${DARK_COLOR};font-size:13px;">${escapeHtml(lead.company)}</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_MUTED};font-size:13px;font-weight:600;width:130px;">Company</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_DARK};font-size:13px;font-weight:500;">${escapeHtml(
+                    lead.company,
+                  )}</td>
                 </tr>
                 <tr>
-                  <td class="stack" style="padding:5px 0;color:#777777;font-size:13px;width:120px;">Email</td>
-                  <td class="stack" style="padding:5px 0;color:${DARK_COLOR};font-size:13px;">${escapeHtml(lead.email)}</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_MUTED};font-size:13px;font-weight:600;width:130px;">Email</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_DARK};font-size:13px;font-weight:500;">${escapeHtml(
+                    lead.email,
+                  )}</td>
                 </tr>
                 <tr>
-                  <td class="stack" style="padding:5px 0;color:#777777;font-size:13px;width:120px;">Phone</td>
-                  <td class="stack" style="padding:5px 0;color:${DARK_COLOR};font-size:13px;">${escapeHtml(lead.phone)}</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_MUTED};font-size:13px;font-weight:600;width:130px;">Phone</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_DARK};font-size:13px;font-weight:500;">${escapeHtml(
+                    lead.phone,
+                  )}</td>
                 </tr>
+                ${
+                  lead.productName
+                    ? `
+                <tr>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_MUTED};font-size:13px;font-weight:600;width:130px;">Product</td>
+                  <td class="stack" style="padding:6px 0;color:${BRAND_COLOR};font-size:13px;font-weight:700;">${escapeHtml(
+                    lead.productName,
+                  )}</td>
+                </tr>
+                `
+                    : ''
+                }
+                ${
+                  lead.productCategory
+                    ? `
+                <tr>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_MUTED};font-size:13px;font-weight:600;width:130px;">Category</td>
+                  <td class="stack" style="padding:6px 0;color:${TEXT_DARK};font-size:13px;font-weight:500;">${escapeHtml(
+                    lead.productCategory,
+                  )}</td>
+                </tr>
+                `
+                    : ''
+                }
               </table>
             </td>
           </tr>
         </table>
-        <p style="margin:0 0 12px;color:${DARK_COLOR};font-size:15px;font-weight:700;">What happens next?</p>
-        <ol style="margin:0 0 24px;padding-left:20px;color:#555555;font-size:14px;line-height:1.7;">
-          <li>We review the products, quantity, certification needs, and delivery location.</li>
-          <li>We check availability and pricing with our supplier network.</li>
-          <li>You receive a practical response or quote from our procurement team.</li>
-        </ol>
-        <p style="margin:0;color:#666666;font-size:14px;line-height:1.7;">
-          For urgent requirements, call us at
-          <a href="tel:${escapeAttr(COMPANY_PHONE.replace(/\s+/g, ''))}" style="color:${BRAND_COLOR};font-weight:700;text-decoration:none;">${escapeHtml(
-            COMPANY_PHONE,
-          )}</a>.
+
+        <!-- Next Steps -->
+        <p style="margin:0 0 14px;color:${TEXT_DARK};font-size:15px;font-weight:700;">
+          What happens next?
         </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 26px;">
+          <tr>
+            <td style="padding:8px 0;vertical-align:top;width:28px;">
+              <div style="width:22px;height:22px;border-radius:50%;background:${BRAND_COLOR};color:#ffffff;font-size:12px;font-weight:700;line-height:22px;text-align:center;">1</div>
+            </td>
+            <td style="padding:8px 0 8px 10px;vertical-align:top;">
+              <strong style="color:${TEXT_DARK};font-size:14px;">Requirement Evaluation:</strong>
+              <div style="color:#6B7280;font-size:13px;line-height:1.5;margin-top:2px;">Our specialists analyze your specifications, quantities, and certification requirements.</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;vertical-align:top;width:28px;">
+              <div style="width:22px;height:22px;border-radius:50%;background:${BRAND_COLOR};color:#ffffff;font-size:12px;font-weight:700;line-height:22px;text-align:center;">2</div>
+            </td>
+            <td style="padding:8px 0 8px 10px;vertical-align:top;">
+              <strong style="color:${TEXT_DARK};font-size:14px;">Sourcing & Availability Check:</strong>
+              <div style="color:#6B7280;font-size:13px;line-height:1.5;margin-top:2px;">We verify inventory availability, lead times, and competitive pricing across our verified supplier network.</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;vertical-align:top;width:28px;">
+              <div style="width:22px;height:22px;border-radius:50%;background:${BRAND_COLOR};color:#ffffff;font-size:12px;font-weight:700;line-height:22px;text-align:center;">3</div>
+            </td>
+            <td style="padding:8px 0 8px 10px;vertical-align:top;">
+              <strong style="color:${TEXT_DARK};font-size:14px;">Formal Quotation & Contact:</strong>
+              <div style="color:#6B7280;font-size:13px;line-height:1.5;margin-top:2px;">You will receive an official quotation and dedicated procurement support within 1–2 business days.</div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Urgent Contact Box -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F8FC;border:1px solid ${BORDER_COLOR};border-radius:8px;padding:16px 20px;margin:0 0 24px;">
+          <tr>
+            <td>
+              <p style="margin:0;color:#4B5563;font-size:13px;line-height:1.6;">
+                <strong>Need immediate assistance?</strong> For urgent procurement requirements, call our direct sourcing desk at
+                <a href="tel:${escapeAttr(COMPANY_PHONE.replace(/\s+/g, ''))}" style="color:${BRAND_COLOR};font-weight:700;text-decoration:none;">${escapeHtml(
+                  COMPANY_PHONE,
+                )}</a>
+                or simply reply to this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <div style="text-align:center;margin-top:28px;">
+          <a href="${escapeAttr(WEBSITE_URL)}/products" style="display:inline-block;background:${BRAND_COLOR};color:#ffffff;text-decoration:none;border-radius:6px;padding:12px 28px;font-size:14px;font-weight:700;box-shadow:0 2px 6px rgba(21,87,176,0.25);">
+            Explore Product Catalog &rarr;
+          </a>
+        </div>
       </td>
     </tr>
     ${emailFooter()}
   `;
 
-  const html = emailShell(subject, 'Your procurement inquiry has been received.', body);
+  const html = emailShell(subject, 'Your procurement inquiry has been received by APR Services Enterprise.', body);
   const text = [
     `Thank you, ${lead.name}.`,
     '',
     `We have received your procurement inquiry at ${COMPANY_NAME}.`,
-    'Our team will review your requirements and contact you within 1-2 business days.',
+    'Our sourcing team will review your requirements and contact you within 1-2 business days.',
     '',
     'Inquiry summary:',
     `Name: ${lead.name}`,
     `Company: ${lead.company}`,
     `Email: ${lead.email}`,
     `Phone: ${lead.phone}`,
+    ...(lead.productName ? [`Product: ${lead.productName}`] : []),
+    ...(lead.productCategory ? [`Category: ${lead.productCategory}`] : []),
     '',
+    `Direct Desk: ${COMPANY_PHONE}`,
     `Website: ${WEBSITE_URL}`,
-    `Phone: ${COMPANY_PHONE}`,
   ].join('\n');
 
   return sendEmail({
@@ -428,63 +588,94 @@ export const sendContactConfirmation = async (lead: ILead): Promise<EmailSendRes
 
 export const sendAdminNotification = async (lead: ILead): Promise<EmailSendResult> => {
   const receivedAt = formatDate(lead.createdAt);
-  const subject = `New procurement inquiry: ${sanitizeHeader(lead.name)} - ${sanitizeHeader(lead.company)}`;
-  const mailtoSubject = encodeURIComponent(`Re: Your ${COMPANY_NAME} procurement inquiry`);
-  const mailtoBody = encodeURIComponent(`Dear ${lead.name},\n\nThank you for contacting ${COMPANY_NAME}.`);
+  const subject = `[New Inquiry] ${sanitizeHeader(lead.name)} — ${sanitizeHeader(lead.company)}`;
+  const mailtoSubject = encodeURIComponent(`Re: Procurement Inquiry — ${COMPANY_NAME}`);
+  const mailtoBody = encodeURIComponent(`Dear ${lead.name},\n\nThank you for contacting ${COMPANY_NAME} regarding your procurement inquiry.`);
+
+  const userDetails = [
+    ['Contact Name', escapeHtml(lead.name)],
+    ['Company', escapeHtml(lead.company)],
+    ['Email', `<a href="mailto:${escapeAttr(lead.email)}" style="color:${BRAND_COLOR};font-weight:600;text-decoration:none;">${escapeHtml(lead.email)}</a>`],
+    ['Phone', `<a href="tel:${escapeAttr(lead.phone)}" style="color:${BRAND_COLOR};font-weight:600;text-decoration:none;">${escapeHtml(lead.phone)}</a>`],
+    ...(lead.productName ? [['Requested Product', `<strong style="color:${BRAND_COLOR};">${escapeHtml(lead.productName)}</strong>`]] : []),
+    ...(lead.productCategory ? [['Category', escapeHtml(lead.productCategory)]] : []),
+    ['Submitted At', escapeHtml(`${receivedAt} IST`)],
+  ];
+
   const body = `
-    ${emailHeader('New contact form submission')}
+    ${emailHeader('New Lead Notification', 'B2B Procurement Inquiry')}
     <tr>
-      <td class="content" style="padding:36px 44px;">
-        <h2 style="margin:0 0 18px;color:${DARK_COLOR};font-size:21px;line-height:1.3;">New inquiry received</h2>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eadfbe;border-radius:6px;overflow:hidden;">
-          ${[
-            ['Name', escapeHtml(lead.name)],
-            ['Email', `<a href="mailto:${escapeAttr(lead.email)}" style="color:${BRAND_COLOR};text-decoration:none;">${escapeHtml(lead.email)}</a>`],
-            ['Phone', `<a href="tel:${escapeAttr(lead.phone)}" style="color:${BRAND_COLOR};text-decoration:none;">${escapeHtml(lead.phone)}</a>`],
-            ['Company', escapeHtml(lead.company)],
-            ['Time', escapeHtml(`${receivedAt} IST`)],
-            ['IP', escapeHtml(lead.ipAddress || 'Not captured')],
-            ['User Agent', escapeHtml(lead.userAgent || 'Not captured')],
-          ]
+      <td class="content" style="padding:36px 38px;">
+        <h2 style="margin:0 0 12px;color:${TEXT_DARK};font-size:20px;line-height:1.35;font-weight:700;">
+          New Procurement Inquiry Received
+        </h2>
+        <p style="margin:0 0 22px;color:#4B5563;font-size:14px;line-height:1.6;">
+          A visitor has submitted a new procurement inquiry via the website contact form. The user details are provided below:
+        </p>
+
+        <!-- Lead Details Table (IP and Device info hidden) -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BORDER_COLOR};border-radius:8px;overflow:hidden;margin:0 0 22px;">
+          ${userDetails
             .map(
               ([label, value], index) => `
-                <tr style="background:${index % 2 === 0 ? '#ffffff' : '#fbfaf6'};">
-                  <td class="stack" style="padding:12px 14px;width:130px;color:#777777;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;vertical-align:top;">${label}</td>
-                  <td class="stack" style="padding:12px 14px;color:${DARK_COLOR};font-size:13px;line-height:1.6;vertical-align:top;">${value}</td>
+                <tr style="background:${index % 2 === 0 ? '#FFFFFF' : '#F9FAFB'};border-bottom:1px solid ${BORDER_COLOR};">
+                  <td class="stack" style="padding:12px 16px;width:140px;color:${TEXT_MUTED};font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;vertical-align:top;">${label}</td>
+                  <td class="stack" style="padding:12px 16px;color:${TEXT_DARK};font-size:13px;line-height:1.6;vertical-align:top;">${value}</td>
                 </tr>
               `,
             )
             .join('')}
-          <tr style="background:${LIGHT_COLOR};">
-            <td class="stack" style="padding:12px 14px;width:130px;color:#777777;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;vertical-align:top;">Message</td>
-            <td class="stack" style="padding:12px 14px;color:${DARK_COLOR};font-size:13px;line-height:1.7;vertical-align:top;">${lineBreaks(
-              lead.message,
-            )}</td>
+        </table>
+
+        <!-- Message Box -->
+        <div style="margin:0 0 26px;">
+          <p style="margin:0 0 8px;color:${TEXT_DARK};font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;">
+            Inquiry Message & Requirements
+          </p>
+          <div style="background:${BG_SUBTLE};border:1px solid #DCE9F9;border-left:4px solid ${BRAND_COLOR};border-radius:6px;padding:16px 18px;color:${TEXT_DARK};font-size:13px;line-height:1.7;">
+            ${lineBreaks(lead.message)}
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 0;">
+          <tr>
+            <td align="center">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:0 6px;" class="btn-stack">
+                    <a href="mailto:${escapeAttr(lead.email)}?subject=${mailtoSubject}&body=${mailtoBody}" style="display:inline-block;background:${BRAND_COLOR};color:#ffffff;text-decoration:none;border-radius:6px;padding:12px 22px;font-size:14px;font-weight:700;text-align:center;">
+                      ✉️ Reply to ${escapeHtml(lead.name)}
+                    </a>
+                  </td>
+                  <td style="padding:0 6px;" class="btn-stack">
+                    <a href="tel:${escapeAttr(lead.phone.replace(/\s+/g, ''))}" style="display:inline-block;background:#F4F8FC;color:${BRAND_COLOR};text-decoration:none;border-radius:6px;padding:12px 22px;font-size:14px;font-weight:700;border:1px solid #CBD5E1;text-align:center;">
+                      📞 Call ${escapeHtml(lead.phone)}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
           </tr>
         </table>
-        <p style="margin:26px 0 0;text-align:center;">
-          <a href="mailto:${escapeAttr(lead.email)}?subject=${mailtoSubject}&body=${mailtoBody}" style="display:inline-block;background:${BRAND_COLOR};color:#ffffff;text-decoration:none;border-radius:6px;padding:13px 24px;font-size:14px;font-weight:700;">
-            Reply to ${escapeHtml(lead.name)}
-          </a>
-        </p>
       </td>
     </tr>
     ${emailFooter()}
   `;
 
-  const html = emailShell(subject, 'A visitor submitted the contact form.', body);
+  const html = emailShell(subject, `New procurement inquiry from ${lead.name} (${lead.company})`, body);
   const text = [
-    'New procurement inquiry received.',
+    'New procurement inquiry received:',
     '',
     `Name: ${lead.name}`,
+    `Company: ${lead.company}`,
     `Email: ${lead.email}`,
     `Phone: ${lead.phone}`,
-    `Company: ${lead.company}`,
-    `Time: ${receivedAt} IST`,
-    `IP: ${lead.ipAddress || 'Not captured'}`,
-    `User Agent: ${lead.userAgent || 'Not captured'}`,
+    ...(lead.productName ? [`Requested Product: ${lead.productName}`] : []),
+    ...(lead.productCategory ? [`Category: ${lead.productCategory}`] : []),
+    `Submitted At: ${receivedAt} IST`,
     '',
-    'Message:',
+    'Inquiry Message:',
     lead.message,
   ].join('\n');
 
@@ -501,3 +692,4 @@ export const sendAdminNotification = async (lead: ILead): Promise<EmailSendResul
 };
 
 export default resend;
+
