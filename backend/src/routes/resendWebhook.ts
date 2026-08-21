@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import type { WebhookEventPayload } from 'resend';
 import resend from '../config/email';
-import Lead, { EmailDeliveryState, ILead } from '../models/Lead';
+import { findLeadByMessageId, updateLeadWebhookEvent, EmailDeliveryState } from '../models/Lead';
 
 const router = Router();
 
@@ -22,7 +22,6 @@ function getWebhookHeaders(req: Request): { id: string; timestamp: string; signa
   const id = req.get('webhook-id');
   const timestamp = req.get('webhook-timestamp');
   const signature = req.get('webhook-signature');
-
   if (!id || !timestamp || !signature) return undefined;
   return { id, timestamp, signature };
 }
@@ -37,7 +36,7 @@ function hasEmailId(event: WebhookEventPayload): event is WebhookEventPayload & 
   );
 }
 
-function findChannel(lead: ILead, emailId: string): EmailChannel | undefined {
+function findChannel(lead: { emailDelivery: { adminMessageId?: string; visitorMessageId?: string } }, emailId: string): EmailChannel | undefined {
   if (lead.emailDelivery?.adminMessageId === emailId) return 'admin';
   if (lead.emailDelivery?.visitorMessageId === emailId) return 'visitor';
   return undefined;
@@ -77,12 +76,7 @@ router.post('/', async (req: RequestWithRawBody, res: Response, next: NextFuncti
       return;
     }
 
-    const lead = await Lead.findOne({
-      $or: [
-        { 'emailDelivery.adminMessageId': event.data.email_id },
-        { 'emailDelivery.visitorMessageId': event.data.email_id },
-      ],
-    });
+    const lead = await findLeadByMessageId(event.data.email_id);
 
     if (!lead) {
       res.status(200).json({ received: true });
@@ -95,18 +89,17 @@ router.post('/', async (req: RequestWithRawBody, res: Response, next: NextFuncti
       return;
     }
 
-    const set: Record<string, unknown> = {
-      [`emailDelivery.${channel}Status`]: status,
-      'emailDelivery.lastEvent': event.type,
-      'emailDelivery.lastEventAt': new Date(event.created_at),
+    const error = eventError(event);
+    const fields = {
+      adminStatus: channel === 'admin' ? status : undefined,
+      visitorStatus: channel === 'visitor' ? status : undefined,
+      adminError: channel === 'admin' ? error : undefined,
+      visitorError: channel === 'visitor' ? error : undefined,
+      lastEvent: event.type,
+      lastEventAt: new Date(event.created_at),
     };
 
-    const error = eventError(event);
-    if (error) {
-      set[`emailDelivery.${channel}Error`] = error.slice(0, 1000);
-    }
-
-    await Lead.updateOne({ _id: lead._id }, { $set: set }, { runValidators: true });
+    await updateLeadWebhookEvent(lead.id, fields, channel);
     res.status(200).json({ received: true });
   } catch (err) {
     next(err);

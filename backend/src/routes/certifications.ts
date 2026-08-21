@@ -1,10 +1,16 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import Certification from '../models/Certification';
+import {
+  findAllCertifications,
+  findCertificationById,
+  createCertification,
+  updateCertification,
+  deleteCertification,
+} from '../models/Certification';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import cloudinary from '../config/cloudinary';
+import { isValidUUID } from '../utils/uuid';
 
 const router = Router();
 
@@ -23,11 +29,7 @@ router.get(
   '/',
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const certifications = await Certification.find()
-        .select('title imageUrl issuer year order -_id')
-        .sort({ order: 1 })
-        .lean();
-      // Cache for 60s, allow stale for 5min
+      const certifications = await findAllCertifications();
       res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       res.json(certifications);
     } catch (err) {
@@ -44,7 +46,7 @@ router.post(
   validate(certificationSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const certification = await Certification.create(req.body);
+      const certification = await createCertification(req.body);
       res.status(201).json(certification);
     } catch (err) {
       next(err);
@@ -62,16 +64,18 @@ router.put(
     try {
       const { id } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!isValidUUID(id)) {
         res.status(400).json({ error: 'Invalid certification ID' });
         return;
       }
 
-      const certification = await Certification.findByIdAndUpdate(
-        id,
-        { $set: req.body },
-        { new: true, runValidators: true }
-      );
+      const certification = await updateCertification(id, {
+        title: req.body.title,
+        imageUrl: req.body.imageUrl,
+        issuer: req.body.issuer,
+        year: req.body.year,
+        order: req.body.order,
+      });
 
       if (!certification) {
         res.status(404).json({ error: 'Certification not found' });
@@ -94,19 +98,18 @@ router.delete(
     try {
       const { id } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!isValidUUID(id)) {
         res.status(400).json({ error: 'Invalid certification ID' });
         return;
       }
 
-      const certification = await Certification.findById(id);
+      const certification = await findCertificationById(id);
 
       if (!certification) {
         res.status(404).json({ error: 'Certification not found' });
         return;
       }
 
-      // Delete from Cloudinary if exists
       if (certification.cloudinaryPublicId) {
         try {
           await cloudinary.uploader.destroy(certification.cloudinaryPublicId);
@@ -115,7 +118,7 @@ router.delete(
         }
       }
 
-      await certification.deleteOne();
+      await deleteCertification(id);
       res.status(204).send();
     } catch (err) {
       next(err);

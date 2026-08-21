@@ -1,16 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
 import { ZodError } from 'zod';
 import jwt from 'jsonwebtoken';
+
+// PostgreSQL error codes
+const PG_UNIQUE_VIOLATION = '23505';
+const PG_FOREIGN_KEY_VIOLATION = '23503';
+const PG_NOT_NULL_VIOLATION = '23502';
+const PG_CHECK_VIOLATION = '23514';
+const PG_INVALID_TEXT_REPRESENTATION = '22P02'; // e.g. invalid UUID
 
 interface AppError extends Error {
   statusCode?: number;
   status?: string;
-  code?: number;
-  path?: string;
-  value?: unknown;
-  keyValue?: Record<string, unknown>;
-  errors?: Record<string, { message: string }>;
+  // pg driver attaches this to errors
+  code?: string;
+  detail?: string;
+  constraint?: string;
+  column?: string;
 }
 
 const errorHandler = (
@@ -22,41 +28,43 @@ const errorHandler = (
 ): void => {
   const isProduction = process.env.NODE_ENV === 'production';
 
-  // Log in development
   if (!isProduction) {
     console.error('🔴 Error:', err);
   } else {
     console.error(`[ERROR] ${req.method} ${req.path}: ${err.message}`);
   }
 
-  // Mongoose Validation Error
-  if (err instanceof mongoose.Error.ValidationError) {
-    const messages = Object.values(err.errors).map((e) => e.message);
-    res.status(400).json({
-      error: 'Validation failed',
-      details: messages,
-    });
+  // ── PostgreSQL errors ──────────────────────────────────────
+  if (err.code === PG_UNIQUE_VIOLATION) {
+    // Extract field name from constraint or detail
+    const field = err.constraint
+      ? err.constraint.replace(/^.*_(.+)_key$/, '$1').replace(/_/g, ' ')
+      : 'field';
+    res.status(409).json({ error: `A record with this ${field} already exists` });
     return;
   }
 
-  // Mongoose CastError (invalid ID format)
-  if (err instanceof mongoose.Error.CastError) {
-    res.status(400).json({
-      error: `Invalid value for field: ${err.path}`,
-    });
+  if (err.code === PG_FOREIGN_KEY_VIOLATION) {
+    res.status(400).json({ error: 'Related record does not exist' });
     return;
   }
 
-  // MongoDB duplicate key error
-  if ((err as AppError).code === 11000) {
-    const field = Object.keys((err as AppError).keyValue || {})[0];
-    res.status(409).json({
-      error: `A record with this ${field} already exists`,
-    });
+  if (err.code === PG_NOT_NULL_VIOLATION) {
+    res.status(400).json({ error: `Required field is missing: ${err.column ?? 'unknown'}` });
     return;
   }
 
-  // JWT errors
+  if (err.code === PG_CHECK_VIOLATION) {
+    res.status(400).json({ error: 'Value is not allowed by database constraints' });
+    return;
+  }
+
+  if (err.code === PG_INVALID_TEXT_REPRESENTATION) {
+    res.status(400).json({ error: 'Invalid ID format' });
+    return;
+  }
+
+  // ── JWT errors ─────────────────────────────────────────────
   if (err instanceof jwt.TokenExpiredError) {
     res.status(401).json({ error: 'Token has expired' });
     return;
@@ -67,28 +75,23 @@ const errorHandler = (
     return;
   }
 
-  // Zod validation errors
+  // ── Zod validation errors ──────────────────────────────────
   if (err instanceof ZodError) {
     const fieldErrors = err.errors.map((e) => ({
       field: e.path.join('.'),
       message: e.message,
     }));
-    res.status(400).json({
-      error: 'Validation failed',
-      details: fieldErrors,
-    });
+    res.status(400).json({ error: 'Validation failed', details: fieldErrors });
     return;
   }
 
-  // Known status code errors
+  // ── Known status code errors ───────────────────────────────
   if (err.statusCode) {
-    res.status(err.statusCode).json({
-      error: err.message,
-    });
+    res.status(err.statusCode).json({ error: err.message });
     return;
   }
 
-  // Default 500 error
+  // ── Default 500 ────────────────────────────────────────────
   res.status(500).json({
     error: isProduction ? 'An unexpected error occurred' : err.message,
   });

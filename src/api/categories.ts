@@ -1,8 +1,9 @@
-import { apiRequest } from './client';
+import { apiRequest, API_BASE, getValidToken } from './client';
 import type { Category } from '../types';
 
 export interface ApiCategory {
-  _id: string;
+  id?: string;
+  _id?: string;
   name: string;
   description: string;
   imageUrl: string;
@@ -12,7 +13,7 @@ export interface ApiCategory {
 
 function toCategory(c: ApiCategory): Category {
   return {
-    id: c._id,
+    id: c.id || c._id || '',
     name: c.name,
     description: c.description,
     imageUrl: c.imageUrl,
@@ -48,7 +49,6 @@ export async function deleteCategory(id: string): Promise<void> {
 export async function uploadCategoryImage(id: string, file: File): Promise<Category> {
   const formData = new FormData();
   formData.append('image', file);
-  const { API_BASE, getValidToken } = await import('./client');
   const token = await getValidToken();
   const res = await fetch(`${API_BASE}/api/categories/${id}/image`, {
     method: 'POST',

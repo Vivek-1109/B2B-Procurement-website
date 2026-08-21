@@ -1,7 +1,12 @@
 import { createHash } from 'crypto';
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import Lead, { IEmailDelivery } from '../models/Lead';
+import {
+  findLeadByFingerprint,
+  createLead,
+  updateLeadEmailDelivery,
+  IEmailDelivery,
+} from '../models/Lead';
 import { validate } from '../middleware/validate';
 import { sendAdminNotification, sendContactConfirmation } from '../config/email';
 
@@ -95,7 +100,6 @@ function getRequestIp(req: Request): string | undefined {
       : Array.isArray(forwardedFor)
         ? forwardedFor[0]?.split(',')[0]?.trim()
         : undefined;
-
   return normalizeSingleLine(firstForwardedIp || req.ip || '').slice(0, 64) || undefined;
 }
 
@@ -106,23 +110,19 @@ function getUserAgent(req: Request): string | undefined {
 
 function isLikelyBot(formStartedAt?: string | number): boolean {
   if (formStartedAt === undefined) return false;
-
   const startedAt =
     typeof formStartedAt === 'number'
       ? formStartedAt
       : /^\d+$/.test(formStartedAt)
         ? Number.parseInt(formStartedAt, 10)
         : Date.parse(formStartedAt);
-
   if (!Number.isFinite(startedAt)) return false;
-
   const elapsedMs = Date.now() - startedAt;
   return elapsedMs >= 0 && elapsedMs < MIN_FORM_COMPLETION_MS;
 }
 
 function buildFullMessage(payload: z.infer<typeof contactSchema>): string {
   if (!payload.productName) return payload.message;
-
   const productContext = `[Quote Request for: ${payload.productName}${
     payload.productCategory ? ` (${payload.productCategory})` : ''
   }]`;
@@ -151,7 +151,7 @@ function deliveryFromResults(
   };
 }
 
-// POST /api/contact - Public
+// POST /api/contact — Public
 router.post(
   '/',
   validate(contactSchema),
@@ -170,13 +170,8 @@ router.post(
       const fullMessage = buildFullMessage(payload);
       const submissionFingerprint = fingerprintSubmission(payload.email, payload.phone, fullMessage);
       const duplicateSince = new Date(Date.now() - DUPLICATE_WINDOW_MS);
-      const duplicate = await Lead.findOne({
-        submissionFingerprint,
-        createdAt: { $gte: duplicateSince },
-      })
-        .select('_id')
-        .lean();
 
+      const duplicate = await findLeadByFingerprint(submissionFingerprint, duplicateSince);
       if (duplicate) {
         res.status(200).json({
           success: true,
@@ -185,7 +180,7 @@ router.post(
         return;
       }
 
-      const lead = await Lead.create({
+      const lead = await createLead({
         name: payload.name,
         company: payload.company,
         email: payload.email,
@@ -210,7 +205,7 @@ router.post(
       ]);
 
       const emailDelivery = deliveryFromResults(adminResult, visitorResult);
-      await Lead.findByIdAndUpdate(lead._id, { $set: { emailDelivery } }, { runValidators: true });
+      await updateLeadEmailDelivery(lead.id, emailDelivery);
 
       res.status(201).json({
         success: true,

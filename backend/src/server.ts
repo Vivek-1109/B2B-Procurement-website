@@ -5,7 +5,6 @@ import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 
 import connectDB from "./config/db";
@@ -26,6 +25,14 @@ app.set("trust proxy", 1);
 // ──────────────────────────────────────────────
 // Security middleware
 // ──────────────────────────────────────────────
+// Parse allowed origins — automatically switches based on NODE_ENV
+const isProd = process.env.NODE_ENV === "production";
+const defaultOrigin = isProd
+  ? "https://b2b.vivek-jha.me,https://aprsvs.com"
+  : "http://localhost:5173";
+const rawOrigin = process.env.ALLOWED_ORIGIN || defaultOrigin;
+const allowedOrigins = rawOrigin.split(",").map((o) => o.trim()).filter(Boolean);
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -42,8 +49,10 @@ app.use(
         ],
         connectSrc: [
           "'self'",
-          "https://b2b-procurement-website-production.up.railway.app",
-          "https://b2-b-procurement-website.vercel.app",
+          "https://*.vercel.app",
+          "https://*.vivek-jha.me",
+          "https://aprsvs.com",
+          ...allowedOrigins,
         ],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
@@ -55,16 +64,21 @@ app.use(
   }),
 );
 
-// Parse allowed origins — supports comma-separated list for multiple Vercel previews
-const rawOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:5173";
-const allowedOrigins = rawOrigin.split(",").map((o) => o.trim());
-
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, curl, Postman)
       if (!origin) return callback(null, true);
+      
+      // Allow explicitly listed origins
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      
+      // Allow any Vercel deployment (*.vercel.app)
+      if (/\.vercel\.app$/i.test(origin)) return callback(null, true);
+      
+      // Allow any subdomains of vivek-jha.me or aprsvs.com
+      if (/\.(vivek-jha\.me|aprsvs\.com)$/i.test(origin)) return callback(null, true);
+      
       callback(new Error(`CORS: Origin ${origin} not allowed`));
     },
     credentials: true,
@@ -103,10 +117,6 @@ if (process.env.NODE_ENV === "production") {
   }));
 }
 
-// ──────────────────────────────────────────────
-// NoSQL injection sanitization
-// ──────────────────────────────────────────────
-app.use(mongoSanitize());
 
 // ──────────────────────────────────────────────
 // Rate limiting

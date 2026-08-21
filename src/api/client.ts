@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const defaultProdBase = typeof window !== 'undefined' ? window.location.origin : 'https://b2b-procurement-website.onrender.com';
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? defaultProdBase : 'http://localhost:3001')
+).replace(/\/$/, '');
 
 let accessToken: string | null = null;
 let tokenExpiry: number | null = null;

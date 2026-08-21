@@ -1,63 +1,104 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { getPool } from '../config/db';
 import bcrypt from 'bcryptjs';
 
-export interface IAdmin extends Document {
+export type AdminRole = 'admin' | 'super_admin';
+
+export interface IAdmin {
+  id: string;
   email: string;
   passwordHash: string;
-  role: 'admin' | 'super_admin';
-  refreshTokens?: string[];
+  role: AdminRole;
   createdAt: Date;
   updatedAt: Date;
-  comparePassword(plain: string): Promise<boolean>;
 }
 
-const AdminSchema = new Schema<IAdmin>(
-  {
-    email: {
-      type: String,
-      required: [true, 'Email is required'],
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    passwordHash: {
-      type: String,
-      required: [true, 'Password is required'],
-    },
-    role: {
-      type: String,
-      enum: ['admin', 'super_admin'],
-      default: 'admin',
-    },
-    refreshTokens: {
-      type: [String],
-      default: [],
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
+// ── Row mapper ─────────────────────────────────────────────
+function toAdmin(row: Record<string, unknown>): IAdmin {
+  return {
+    id: row.id as string,
+    email: row.email as string,
+    passwordHash: row.password_hash as string,
+    role: row.role as AdminRole,
+    createdAt: row.created_at as Date,
+    updatedAt: row.updated_at as Date,
+  };
+}
 
-// Hash password before save
-AdminSchema.pre<IAdmin>('save', async function (next) {
-  if (!this.isModified('passwordHash')) return next();
-  try {
-    const salt = await bcrypt.genSalt(12);
-    this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
-    next();
-  } catch (err) {
-    next(err as Error);
-  }
-});
+// ── Query helpers ──────────────────────────────────────────
+export async function findAdminByEmail(email: string): Promise<IAdmin | null> {
+  const { rows } = await getPool().query(
+    'SELECT * FROM admins WHERE email = $1 LIMIT 1',
+    [email.toLowerCase().trim()]
+  );
+  return rows.length ? toAdmin(rows[0]) : null;
+}
 
-// Compare password method
-AdminSchema.methods.comparePassword = async function (
+export async function findAdminById(id: string): Promise<IAdmin | null> {
+  const { rows } = await getPool().query(
+    'SELECT * FROM admins WHERE id = $1 LIMIT 1',
+    [id]
+  );
+  return rows.length ? toAdmin(rows[0]) : null;
+}
+
+export async function createAdmin(data: {
+  email: string;
+  plainPassword: string;
+  role?: AdminRole;
+}): Promise<IAdmin> {
+  const salt = await bcrypt.genSalt(12);
+  const hash = await bcrypt.hash(data.plainPassword, salt);
+  const { rows } = await getPool().query(
+    `INSERT INTO admins (email, password_hash, role)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [data.email.toLowerCase().trim(), hash, data.role ?? 'admin']
+  );
+  return toAdmin(rows[0]);
+}
+
+export async function compareAdminPassword(
+  admin: IAdmin,
   plain: string
 ): Promise<boolean> {
-  return bcrypt.compare(plain, this.passwordHash);
-};
+  return bcrypt.compare(plain, admin.passwordHash);
+}
 
-const Admin = mongoose.model<IAdmin>('Admin', AdminSchema);
+// ── Refresh token helpers (replaces refreshTokens[] array) ──
+export async function addRefreshToken(
+  adminId: string,
+  tokenHash: string
+): Promise<void> {
+  await getPool().query(
+    'INSERT INTO admin_refresh_tokens (admin_id, token_hash) VALUES ($1, $2)',
+    [adminId, tokenHash]
+  );
+}
 
-export default Admin;
+export async function hasRefreshToken(
+  adminId: string,
+  tokenHash: string
+): Promise<boolean> {
+  const { rows } = await getPool().query(
+    'SELECT 1 FROM admin_refresh_tokens WHERE admin_id = $1 AND token_hash = $2 LIMIT 1',
+    [adminId, tokenHash]
+  );
+  return rows.length > 0;
+}
+
+export async function removeRefreshToken(
+  adminId: string,
+  tokenHash: string
+): Promise<void> {
+  await getPool().query(
+    'DELETE FROM admin_refresh_tokens WHERE admin_id = $1 AND token_hash = $2',
+    [adminId, tokenHash]
+  );
+}
+
+export async function removeAllRefreshTokens(adminId: string): Promise<void> {
+  await getPool().query(
+    'DELETE FROM admin_refresh_tokens WHERE admin_id = $1',
+    [adminId]
+  );
+}

@@ -1,9 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import Lead from '../models/Lead';
+import {
+  findLeads,
+  findLeadById,
+  updateLeadStatus,
+  deleteLead,
+} from '../models/Lead';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import { isValidUUID } from '../utils/uuid';
 
 const router = Router();
 
@@ -22,33 +27,12 @@ router.get(
   '/',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const limit = Math.min(
-        100,
-        Math.max(1, parseInt(req.query.limit as string) || 20)
-      );
+      const page  = Math.max(1, parseInt(req.query.page as string) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
       const status = req.query.status as string | undefined;
-      const skip = (page - 1) * limit;
 
-      const filter: Record<string, string> = {};
-      if (status && ['new', 'contacted', 'closed'].includes(status)) {
-        filter.status = status;
-      }
-
-      const [data, total] = await Promise.all([
-        Lead.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-        Lead.countDocuments(filter),
-      ]);
-
-      res.json({
-        data,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages: Math.ceil(total / limit),
-        },
-      });
+      const result = await findLeads({ page, limit, status });
+      res.json(result);
     } catch (err) {
       next(err);
     }
@@ -63,16 +47,12 @@ router.patch(
     try {
       const { id } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!isValidUUID(id)) {
         res.status(400).json({ error: 'Invalid lead ID' });
         return;
       }
 
-      const lead = await Lead.findByIdAndUpdate(
-        id,
-        { $set: { status: req.body.status } },
-        { new: true, runValidators: true }
-      );
+      const lead = await updateLeadStatus(id, req.body.status);
 
       if (!lead) {
         res.status(404).json({ error: 'Lead not found' });
@@ -93,18 +73,18 @@ router.delete(
     try {
       const { id } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!isValidUUID(id)) {
         res.status(400).json({ error: 'Invalid lead ID' });
         return;
       }
 
-      const lead = await Lead.findByIdAndDelete(id);
-
-      if (!lead) {
+      const existed = await findLeadById(id);
+      if (!existed) {
         res.status(404).json({ error: 'Lead not found' });
         return;
       }
 
+      await deleteLead(id);
       res.status(204).send();
     } catch (err) {
       next(err);

@@ -1,11 +1,17 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import mongoose from 'mongoose';
-import Product from '../models/Product';
+import {
+  findActiveProducts,
+  findProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from '../models/Product';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { uploadSingle, uploadBufferToCloudinary } from '../middleware/upload';
 import cloudinary from '../config/cloudinary';
+import { isValidUUID } from '../utils/uuid';
 
 const router = Router();
 
@@ -27,12 +33,7 @@ router.get(
   '/',
   async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const products = await Product.find({ isActive: true })
-        .select('name category description imageUrl createdAt')
-        .sort({ createdAt: -1 })
-        .lean();
-
-      // Cache for 60s, stale-while-revalidate for 5min
+      const products = await findActiveProducts();
       res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
       res.json(products);
     } catch (err) {
@@ -49,7 +50,7 @@ router.post(
   validate(productSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const product = await Product.create(req.body);
+      const product = await createProduct(req.body);
       res.status(201).json(product);
     } catch (err) {
       next(err);
@@ -67,16 +68,17 @@ router.put(
     try {
       const { id } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!isValidUUID(id)) {
         res.status(400).json({ error: 'Invalid product ID' });
         return;
       }
 
-      const product = await Product.findByIdAndUpdate(
-        id,
-        { $set: req.body },
-        { new: true, runValidators: true }
-      );
+      const product = await updateProduct(id, {
+        name: req.body.name,
+        category: req.body.category,
+        description: req.body.description,
+        imageUrl: req.body.imageUrl,
+      });
 
       if (!product) {
         res.status(404).json({ error: 'Product not found' });
@@ -99,19 +101,18 @@ router.delete(
     try {
       const { id } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!isValidUUID(id)) {
         res.status(400).json({ error: 'Invalid product ID' });
         return;
       }
 
-      const product = await Product.findById(id);
+      const product = await findProductById(id);
 
       if (!product) {
         res.status(404).json({ error: 'Product not found' });
         return;
       }
 
-      // Delete from Cloudinary if exists
       if (product.cloudinaryPublicId) {
         try {
           await cloudinary.uploader.destroy(product.cloudinaryPublicId);
@@ -120,7 +121,7 @@ router.delete(
         }
       }
 
-      await product.deleteOne();
+      await deleteProduct(id);
       res.status(204).send();
     } catch (err) {
       next(err);
@@ -143,7 +144,7 @@ router.post(
     try {
       const { id } = req.params;
 
-      if (!mongoose.Types.ObjectId.isValid(id)) {
+      if (!isValidUUID(id)) {
         res.status(400).json({ error: 'Invalid product ID' });
         return;
       }
@@ -153,25 +154,17 @@ router.post(
         return;
       }
 
-      // Upload buffer to Cloudinary using upload_stream (v2 compatible)
       const cloudinaryResult = await uploadBufferToCloudinary(req.file.buffer);
 
-      // Delete old image from Cloudinary if it exists
-      const existing = await Product.findById(id);
+      const existing = await findProductById(id);
       if (existing?.cloudinaryPublicId) {
         await cloudinary.uploader.destroy(existing.cloudinaryPublicId).catch(console.error);
       }
 
-      const product = await Product.findByIdAndUpdate(
-        id,
-        {
-          $set: {
-            imageUrl: cloudinaryResult.secure_url,
-            cloudinaryPublicId: cloudinaryResult.public_id,
-          },
-        },
-        { new: true }
-      );
+      const product = await updateProduct(id, {
+        imageUrl: cloudinaryResult.secure_url,
+        cloudinaryPublicId: cloudinaryResult.public_id,
+      });
 
       if (!product) {
         res.status(404).json({ error: 'Product not found' });

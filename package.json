@@ -1,5 +1,5 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "apr-services-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "2.1.1",
     "lucide-react": "^1.8.0",
     "react": "19.2.3",
