@@ -47,7 +47,13 @@ app.use(
           "https://res.cloudinary.com",
           "https://images.unsplash.com",
         ],
-        connectSrc: ["'self'", ...allowedOrigins],
+        connectSrc: [
+          "'self'",
+          "https://*.vercel.app",
+          "https://*.vivek-jha.me",
+          "https://aprsvs.com",
+          ...allowedOrigins,
+        ],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests:
@@ -63,7 +69,16 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, curl, Postman)
       if (!origin) return callback(null, true);
+      
+      // Allow explicitly listed origins
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      
+      // Allow any Vercel deployment (*.vercel.app)
+      if (/\.vercel\.app$/i.test(origin)) return callback(null, true);
+      
+      // Allow any subdomains of vivek-jha.me or aprsvs.com
+      if (/\.(vivek-jha\.me|aprsvs\.com)$/i.test(origin)) return callback(null, true);
+      
       callback(new Error(`CORS: Origin ${origin} not allowed`));
     },
     credentials: true,
